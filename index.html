@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPSM — Serra Azul Supermercados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p1:#7030A0;--p2:#67449F;--p3:#43939D;--p4:#49859D;
+  --bg:#0E0B14;--bg2:#150F1F;--bg3:#1C1530;
+  --surface:rgba(112,48,160,0.07);--surface2:rgba(67,147,157,0.07);
+  --border:rgba(112,48,160,0.18);--border2:rgba(67,147,157,0.18);
+  --text:#F0EBF8;--muted:#9180A8;--dim:#5A4A6E;
+  --gold:#E8C84A;--silver:#9AAEC0;--bronze:#C4835A;
+  --cat-ma:#43939D;--cat-a:#9F7FCC;--cat-m:#E8C84A;--cat-b:#D4734A;--cat-mb:#A03030;
+}
+body{font-family:"Outfit",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.mesh{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.mesh::before{content:"";position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(112,48,160,0.12) 0%,transparent 70%);top:-150px;left:-150px}
+.mesh::after{content:"";position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(67,147,157,0.10) 0%,transparent 70%);bottom:-100px;right:-100px}
+
+.header{position:relative;z-index:20;padding:1.1rem 2rem;border-bottom:1px solid var(--border);background:rgba(14,11,20,0.94);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.brand-eye{display:flex;align-items:center;gap:14px}
+.brand-dot{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p1),var(--p3));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.brand-label{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--p3);font-family:"DM Mono",monospace;margin-bottom:2px}
+.brand-title{font-size:22px;font-weight:800;color:var(--text);line-height:1}
+.brand-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.raio-tabs{display:flex;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px}
+.raio-tab{font-family:"DM Mono",monospace;font-size:11px;font-weight:500;padding:5px 14px;border-radius:5px;border:none;cursor:pointer;color:var(--muted);background:transparent;transition:all 0.2s;white-space:nowrap}
+.raio-tab:hover{color:var(--text)}
+.raio-tab.active{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
+.reset-btn{font-family:"DM Mono",monospace;font-size:11px;padding:6px 13px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--p3);cursor:pointer;transition:all 0.2s}
+.reset-btn:hover{background:rgba(67,147,157,0.12)}
+
+.tab-nav{position:relative;z-index:10;display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(14,11,20,0.7);padding:0 1.5rem}
+.tab-btn{font-family:"DM Mono",monospace;font-size:11px;font-weight:500;padding:10px 18px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--p3);border-bottom-color:var(--p3)}
+
+.page{display:none}
+.page.active{display:flex}
+#page-fat{flex-direction:column}
+#page-fat.active{display:flex}
+
+.layout{position:relative;z-index:10;width:100%;display:grid;grid-template-columns:300px 1fr;height:calc(100vh - 130px)}
+.sidebar{border-right:1px solid var(--border);overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:1rem;background:rgba(14,11,20,0.6);scrollbar-width:thin;scrollbar-color:var(--dim) transparent}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+.sec-title{font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--dim);font-family:"DM Mono",monospace;margin-bottom:6px}
+.total-pill{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+.total-label{font-size:12px;color:var(--muted);font-family:"DM Mono",monospace}
+.total-val{font-size:15px;font-weight:700;font-family:"DM Mono",monospace;transition:color 0.3s}
+.total-val.ok{color:var(--p3)}.total-val.near{color:var(--gold)}.total-val.bad{color:#E05050}
+
+.grp-title{font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--p3);font-family:"DM Mono",monospace;margin:8px 0 4px;padding-bottom:4px;border-bottom:1px solid rgba(112,48,160,0.15)}
+.grp-title:first-child{margin-top:0}
+
+.w-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;transition:border-color 0.2s}
+.w-item:hover{border-color:rgba(112,48,160,0.4)}
+.w-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px}
+.w-name{font-size:11px;font-weight:500;color:var(--text);line-height:1.35;flex:1;margin-right:8px}
+.w-pct{font-family:"DM Mono",monospace;font-size:12px;font-weight:600;color:var(--p3);min-width:32px;text-align:right}
+.w-slider{width:100%;-webkit-appearance:none;height:3px;border-radius:2px;outline:none;cursor:pointer;background-image:linear-gradient(var(--p2),var(--p2));background-repeat:no-repeat;background-color:rgba(255,255,255,0.08)}
+.w-slider::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--p3);cursor:pointer;transition:transform 0.15s;border:2px solid rgba(255,255,255,0.15)}
+.w-slider::-webkit-slider-thumb:hover{transform:scale(1.4)}
+.w-slider::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--p3);cursor:pointer;border:2px solid rgba(255,255,255,0.15)}
+
+.content{overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:1.25rem}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+
+.top5-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.t5-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;position:relative;overflow:hidden;transition:all 0.2s}
+.t5-card::after{content:"";position:absolute;top:0;left:0;right:0;height:2px}
+.t5-card.r1::after{background:var(--gold)}.t5-card.r2::after{background:var(--silver)}
+.t5-card.r3::after{background:var(--bronze)}.t5-card.r4::after{background:var(--p2)}.t5-card.r5::after{background:var(--p4)}
+.t5-card:hover{border-color:rgba(112,48,160,0.45);transform:translateY(-2px)}
+.t5-rank{font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);margin-bottom:3px}
+.t5-cidade{font-size:10px;color:var(--muted);margin-bottom:2px}
+.t5-name{font-size:11px;font-weight:700;line-height:1.25;margin-bottom:7px;min-height:28px}
+.t5-score{font-family:"DM Mono",monospace;font-size:20px;font-weight:700;line-height:1;margin-bottom:5px}
+.t5-card.r1 .t5-score{color:var(--gold)}.t5-card.r2 .t5-score{color:var(--silver)}
+.t5-card.r3 .t5-score{color:var(--bronze)}.t5-card.r4 .t5-score{color:var(--p3)}.t5-card.r5 .t5-score{color:var(--p4)}
+
+.badge{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.08em;padding:2px 7px;border-radius:4px;text-transform:uppercase;font-family:"DM Mono",monospace}
+.bma{background:rgba(67,147,157,0.15);color:var(--cat-ma);border:1px solid rgba(67,147,157,0.3)}
+.ba{background:rgba(112,48,160,0.15);color:var(--cat-a);border:1px solid rgba(112,48,160,0.3)}
+.bm{background:rgba(232,200,74,0.15);color:var(--cat-m);border:1px solid rgba(232,200,74,0.3)}
+.bb{background:rgba(212,115,74,0.15);color:var(--cat-b);border:1px solid rgba(212,115,74,0.3)}
+.bmb{background:rgba(160,48,48,0.15);color:#D07070;border:1px solid rgba(160,48,48,0.3)}
+
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.table-top-title{font-size:13px;font-weight:600}.table-count{font-family:"DM Mono",monospace;font-size:11px;color:var(--muted)}
+.search-wrap{padding:8px 16px;border-bottom:1px solid var(--border)}
+.search-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;padding:6px 11px;color:var(--text);font-size:12px;font-family:"Outfit",sans-serif;outline:none;transition:border-color 0.2s}
+.search-input:focus{border-color:rgba(112,48,160,0.5)}.search-input::placeholder{color:var(--dim)}
+.filter-row{padding:8px 16px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap}
+.f-btn{font-family:"DM Mono",monospace;font-size:10px;font-weight:500;padding:3px 9px;border-radius:4px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);transition:all 0.2s;text-transform:uppercase;letter-spacing:0.06em}
+.f-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.2)}
+.f-btn.on{color:var(--text);background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.2)}
+.f-btn.fma.on{color:var(--cat-ma);border-color:rgba(67,147,157,0.5);background:rgba(67,147,157,0.1)}
+.f-btn.fa.on{color:var(--cat-a);border-color:rgba(112,48,160,0.5);background:rgba(112,48,160,0.1)}
+.f-btn.fm.on{color:var(--cat-m);border-color:rgba(232,200,74,0.5);background:rgba(232,200,74,0.1)}
+.f-btn.fb.on{color:var(--cat-b);border-color:rgba(212,115,74,0.5);background:rgba(212,115,74,0.1)}
+.f-btn.fmb.on{color:#D07070;border-color:rgba(160,48,48,0.5);background:rgba(160,48,48,0.1)}
+.t-scroll{overflow-x:auto}
+.t-scroll::-webkit-scrollbar{width:4px;height:4px}
+.t-scroll::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+.rtable{width:100%;border-collapse:collapse;font-size:12.5px}
+.rtable th{position:sticky;top:0;z-index:5;padding:9px 14px;text-align:left;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);font-family:"DM Mono",monospace;background:var(--bg2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+.rtable th:hover{color:var(--muted)}
+.rtable td{padding:8px 14px;border-bottom:1px solid rgba(112,48,160,0.06);vertical-align:middle}
+.rtable tr:hover td{background:rgba(112,48,160,0.05)}
+.rtable tr:last-child td{border-bottom:none}
+.rk{font-family:"DM Mono",monospace;font-size:11px;color:var(--dim);width:26px}
+.bn{font-weight:600;font-size:12.5px}.cidade-cell{font-size:10px;color:var(--muted);margin-top:1px}
+.sc{font-family:"DM Mono",monospace;font-size:13px;font-weight:700}
+.bar-w{width:72px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden}
+.bar-f{height:100%;border-radius:2px;transition:width 0.4s ease}
+.si{opacity:0.35;margin-left:3px;font-size:10px}.si.act{opacity:1;color:var(--p3)}
+
+/* CHART PAGE */
+.chart-page{position:relative;z-index:10;width:100%;display:grid;grid-template-columns:300px 1fr;height:calc(100vh - 130px)}
+.chart-content{overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem}
+.chart-content::-webkit-scrollbar{width:4px}
+.chart-content::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative}
+.chart-box-title{font-size:12px;font-weight:600;color:var(--muted);font-family:"DM Mono",monospace;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px}
+.canvas-wrap{position:relative;width:100%}
+
+/* DETAIL PAGE */
+.detail-page{position:relative;z-index:10;width:100%;display:grid;grid-template-columns:300px 1fr;height:calc(100vh - 130px)}
+.detail-content{overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem}
+.detail-content::-webkit-scrollbar{width:4px}
+.detail-content::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+.ind-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.ind-table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.ind-table-title{font-size:13px;font-weight:600}
+.ind-table-sub{font-size:11px;color:var(--muted);font-family:"DM Mono",monospace}
+.ind-scroll{overflow-x:auto}
+.ind-scroll::-webkit-scrollbar{width:4px;height:5px}
+.ind-scroll::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+.ind-table{width:100%;border-collapse:collapse;font-size:11.5px;white-space:nowrap}
+.ind-table th{position:sticky;top:0;z-index:5;padding:8px 12px;text-align:left;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);font-family:"DM Mono",monospace;background:var(--bg2);border-bottom:1px solid var(--border);white-space:nowrap}
+.ind-table th.sticky-col{position:sticky;left:0;z-index:6;background:var(--bg2)}
+.ind-table td{padding:7px 12px;border-bottom:1px solid rgba(112,48,160,0.06);vertical-align:middle;white-space:nowrap}
+.ind-table td.sticky-col{position:sticky;left:0;z-index:2;background:var(--bg2);font-weight:600;color:var(--text);border-right:1px solid var(--border)}
+.ind-table tr:hover td{background:rgba(112,48,160,0.05)}
+.ind-table tr:hover td.sticky-col{background:var(--bg3)}
+.ind-table tr:last-child td{border-bottom:none}
+.ind-num{font-family:"DM Mono",monospace;font-size:11px}
+.ind-norm{font-family:"DM Mono",monospace;font-size:11px}
+.norm-bar-w{display:inline-block;width:48px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;vertical-align:middle;margin-left:5px;overflow:hidden}
+.norm-bar-f{height:100%;border-radius:2px;background:var(--p3)}
+
+@media(max-width:900px){
+  .layout,.chart-page,.detail-page{grid-template-columns:1fr;height:auto}
+  .sidebar{border-right:none;border-bottom:1px solid var(--border);max-height:380px}
+  .top5-grid{grid-template-columns:repeat(2,1fr)}
+  .canvas-wrap{height:500px!important}
+}
+
+/* ── FATURAMENTO PAGE ───────────────────────────────────────────── */
+.fat-page{width:100%;padding:1.5rem;flex-direction:column;gap:1.25rem;overflow-y:auto}
+.fat-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
+.fat-controls label{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-family:"DM Mono",monospace}
+.fat-select{font-size:12px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:"Outfit",sans-serif;outline:none;cursor:pointer;transition:border-color .2s}
+.fat-select:focus{border-color:rgba(112,48,160,.5)}
+.fat-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.fat-metric{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.fat-metric .lbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:"DM Mono",monospace;margin-bottom:6px}
+.fat-metric .val2{font-size:18px;font-weight:700;color:var(--text);line-height:1}
+.fat-metric .sub{font-size:10px;color:var(--dim);margin-top:4px}
+.fat-area{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.fat-area-card{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 14px}
+.fat-area-card .lbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--p3);font-family:"DM Mono",monospace;margin-bottom:5px}
+.fat-area-card .val2{font-size:17px;font-weight:700;color:var(--text)}
+.fat-area-card.capture{background:rgba(112,48,160,.08);border-color:rgba(112,48,160,.25)}
+.fat-area-card.capture .lbl{color:var(--p2)}
+.fat-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.fat-table-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.fat-table-top-title{font-size:13px;font-weight:600}
+.fat-table-sub{font-size:11px;color:var(--muted);font-family:"DM Mono",monospace}
+.fat-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.fat-table th{padding:9px 16px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-family:"DM Mono",monospace;background:var(--bg2);border-bottom:1px solid var(--border)}
+.fat-table td{padding:9px 16px;border-bottom:1px solid rgba(112,48,160,.06);vertical-align:middle}
+.fat-table tr:last-child td{border-bottom:none;background:rgba(112,48,160,.05);font-weight:600}
+.fat-table tr:hover td{background:rgba(112,48,160,.05)}
+.fat-bar-wrap{display:flex;align-items:center;gap:8px}
+.fat-bar-bg{flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.fat-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--p2),var(--p3));transition:width .5s ease}
+.fat-val{min-width:100px;text-align:right;font-size:12px;font-family:"DM Mono",monospace;color:var(--text)}
+.fat-pct{min-width:36px;text-align:right;font-size:11px;color:var(--dim);font-family:"DM Mono",monospace}
+.fat-note{font-size:11px;color:var(--dim);border-top:1px solid var(--border);padding-top:10px;line-height:1.6}
+.fat-scatter-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.fat-ipsm-badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;padding:3px 9px;border-radius:5px;text-transform:uppercase;font-family:"DM Mono",monospace}
+.fat-ipsm-ma{background:rgba(67,147,157,.15);color:var(--cat-ma);border:1px solid rgba(67,147,157,.3)}
+.fat-ipsm-a{background:rgba(112,48,160,.15);color:var(--cat-a);border:1px solid rgba(112,48,160,.3)}
+.fat-ipsm-m{background:rgba(232,200,74,.15);color:var(--cat-m);border:1px solid rgba(232,200,74,.3)}
+.fat-ipsm-b{background:rgba(212,115,74,.15);color:var(--cat-b);border:1px solid rgba(212,115,74,.3)}
+.fat-ipsm-mb{background:rgba(160,48,48,.15);color:#D07070;border:1px solid rgba(160,48,48,.3)}
+@media(max-width:900px){
+  .fat-metrics{grid-template-columns:repeat(2,1fr)}
+  .fat-area{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+
+<header class="header">
+  <div class="brand-eye">
+    <div class="brand-dot">SA</div>
+    <div>
+      <div class="brand-label">RAY Consulting · Serra Azul Supermercados · 2026</div>
+      <div class="brand-title">IPSM Dashboard</div>
+      <div class="brand-sub">Índice de Potencial de Mercado por Supermercado · 14 pontos · 6 municípios</div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="raio-tabs">
+      <button class="raio-tab active" data-r="500m">500m</button>
+      <button class="raio-tab" data-r="1km">1km</button>
+      <button class="raio-tab" data-r="2km">2km</button>
+    </div>
+    <button class="reset-btn" id="resetBtn">↺ Resetar pesos</button>
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="ranking">Ranking IPSM</button>
+  <button class="tab-btn" data-tab="chart">Gráfico Comparativo</button>
+  <button class="tab-btn" data-tab="detail">Dados Detalhados</button>
+  <button class="tab-btn" data-tab="fat">Faturamento</button>
+</nav>
+
+<!-- PAGE: RANKING -->
+<div class="page active" id="page-ranking">
+  <div class="layout">
+    <aside class="sidebar" id="sidebar-ranking">
+      <div>
+        <div class="sec-title">Total dos pesos</div>
+        <div class="total-pill">
+          <span class="total-label">Soma atual</span>
+          <span class="total-val ok" id="totalVal">100%</span>
+        </div>
+      </div>
+      <div>
+        <div class="sec-title">Ajuste os pesos</div>
+        <div id="wContainer" style="display:flex;flex-direction:column;gap:7px"></div>
+      </div>
+    </aside>
+    <main class="content">
+      <div>
+        <div class="sec-title" style="margin-bottom:8px">Top 5 pontos</div>
+        <div class="top5-grid" id="top5"></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-top">
+          <span class="table-top-title">Ranking completo</span>
+          <span class="table-count" id="tCount">14 pontos</span>
+        </div>
+        <div class="search-wrap"><input type="text" class="search-input" id="searchInput" placeholder="Buscar ponto ou cidade..."></div>
+        <div class="filter-row" id="fRow"></div>
+        <div class="t-scroll">
+          <table class="rtable"><thead id="tHead"></thead><tbody id="tBody"></tbody></table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- PAGE: CHART -->
+<div class="page" id="page-chart">
+  <div class="chart-page">
+    <aside class="sidebar" id="sidebar-chart">
+      <div>
+        <div class="sec-title">Total dos pesos</div>
+        <div class="total-pill">
+          <span class="total-label">Soma atual</span>
+          <span class="total-val ok" id="totalVal2">100%</span>
+        </div>
+      </div>
+      <div>
+        <div class="sec-title">Ajuste os pesos</div>
+        <div id="wContainer2" style="display:flex;flex-direction:column;gap:7px"></div>
+      </div>
+    </aside>
+    <div class="chart-content">
+      <div class="chart-box">
+        <div class="chart-box-title">Score IPSM por ponto — barras horizontais · classificação por cor</div>
+        <div class="canvas-wrap" style="height:480px">
+          <canvas id="barChart" role="img" aria-label="Gráfico de barras horizontais com IPSM dos 14 pontos Serra Azul">IPSM dos 14 pontos analisados, ordenados por score.</canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-box-title">Contribuição por grupo — decomposição do score IPSM</div>
+        <div class="canvas-wrap" style="height:420px">
+          <canvas id="stackedChart" role="img" aria-label="Barras empilhadas mostrando contribuição de cada grupo de indicadores no score IPSM de cada ponto">Contribuição de cada grupo de indicadores no score final.</canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: DETAIL -->
+<div class="page" id="page-detail">
+  <div class="detail-page">
+    <aside class="sidebar" id="sidebar-detail">
+      <div>
+        <div class="sec-title">Total dos pesos</div>
+        <div class="total-pill">
+          <span class="total-label">Soma atual</span>
+          <span class="total-val ok" id="totalVal3">100%</span>
+        </div>
+      </div>
+      <div>
+        <div class="sec-title">Ajuste os pesos</div>
+        <div id="wContainer3" style="display:flex;flex-direction:column;gap:7px"></div>
+      </div>
+    </aside>
+    <div class="detail-content">
+      <div class="ind-table-wrap">
+        <div class="ind-table-top">
+          <span class="ind-table-title">Dados por indicador — valores normalizados (0→1)</span>
+          <span class="ind-table-sub">Scroll horizontal para ver todos</span>
+        </div>
+        <div class="ind-scroll">
+          <table class="ind-table"><thead id="indHead"></thead><tbody id="indBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: FATURAMENTO -->
+<div class="page fat-page" id="page-fat">
+  <div class="fat-controls">
+    <label>Ponto:</label>
+    <select class="fat-select" id="fatPonto" onchange="renderFat()"></select>
+    <label style="margin-left:8px">Raio:</label>
+    <select class="fat-select" id="fatRaio" onchange="renderFat()">
+      <option value="500m">500m — conveniência imediata</option>
+      <option value="1km">1km — atração local</option>
+      <option value="2km" selected>2km — mercado total</option>
+    </select>
+  </div>
+  <div class="fat-metrics" id="fatMetrics"></div>
+  <div class="fat-area" id="fatArea"></div>
+  <div class="fat-scatter-wrap">
+    <div class="fat-table-top">
+      <span class="fat-table-top-title">IPSM × Faturamento — dispersão por ponto</span>
+      <span class="fat-table-sub" id="scatterRaioLabel">Raio: 1km · todos os 14 pontos · cor por classificação</span>
+    </div>
+    <div style="padding:12px 16px">
+      <div class="canvas-wrap" style="height:480px">
+        <canvas id="scatterChart" role="img" aria-label="Gráfico de dispersão IPSM versus potencial de faturamento por ponto">Dispersão IPSM vs faturamento dos 14 pontos.</canvas>
+      </div>
+    </div>
+  </div>
+  <div class="fat-table-wrap">
+    <div class="fat-table-top">
+      <span class="fat-table-top-title">Potencial por seção — ordenado por valor</span>
+      <span class="fat-table-sub">Demanda total do mercado · não captura estimada</span>
+    </div>
+    <table class="fat-table"><thead id="fatThead"></thead><tbody id="fatTbody"></tbody></table>
+  </div>
+  <div class="fat-note" id="fatNote"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+
+
+// ─── INDICADORES ────────────────────────────────────────────────────────────
+const INDICATORS = [
+  // Grupo: Mercado de Alimentação (32%)
+  {key:"alimNodom",  label:"Alim. no domicílio",     grp:"Mercado de Alimentação",    dw:12},
+  {key:"alimTotal",  label:"Alimentação total",       grp:"Mercado de Alimentação",    dw:10},
+  {key:"alimFora",   label:"Alim. fora domicílio",   grp:"Mercado de Alimentação",    dw:6},
+  {key:"pctAlim",    label:"% alim./renda total",    grp:"Mercado de Alimentação",    dw:4},
+  // Grupo: Renda e Potencial de Gasto (28%)
+  {key:"rendaTotal", label:"Renda total (R$ mi)",     grp:"Renda e Potencial",         dw:10},
+  {key:"rendaDom",   label:"Renda por domicílio",     grp:"Renda e Potencial",         dw:8},
+  {key:"rendaPC",    label:"Renda per capita",        grp:"Renda e Potencial",         dw:6},
+  {key:"classeAB",   label:"Classe A+B (%)",          grp:"Renda e Potencial",         dw:4},
+  // Grupo: Volume e Fluxo (24%)
+  {key:"fluxo",      label:"Fluxo/dia",               grp:"Volume e Fluxo",            dw:10},
+  {key:"dom",        label:"Domicílios",              grp:"Volume e Fluxo",            dw:7},
+  {key:"hab",        label:"Habitantes",              grp:"Volume e Fluxo",            dw:4},
+  {key:"auto",       label:"Dom. c/ automóvel (%)",  grp:"Volume e Fluxo",            dw:3},
+  // Grupo: Perfil do Consumidor (8%)
+  {key:"adultos",    label:"Adultos 30-59 (%)",       grp:"Perfil do Consumidor",      dw:5},
+  {key:"compra",     label:"Compra em mercado",       grp:"Perfil do Consumidor",      dw:3},
+  // Grupo: Concorrência — inverso (8%)
+  {key:"concDir",    label:"Conc. diretos (inverso)", grp:"Concorrência (inverso)",    dw:6},
+  {key:"concInd",    label:"Conc. indiretos (inv.)", grp:"Concorrência (inverso)",    dw:2},
+];
+
+// ─── DADOS BRUTOS ────────────────────────────────────────────────────────────
+// Campos por ponto: {n, c, hab, dom, fluxo, rendaPC, rendaDom, rendaTotal,
+//                    classeAB, adultos, auto, alimTotal, alimFora, alimNodom,
+//                    compra, pctAlim, concDir, concInd}
+const RAW_DATA = {
+"500m":[
+ {n:"BJ Aristides Figueiredo",  c:"Bom Jesus",      hab:4780,  dom:2029, fluxo:32957, rendaPC:4421.54, rendaDom:10416.43,rendaTotal:21.13, classeAB:0.406,adultos:0.379,auto:0.542,alimTotal:2297261,alimFora:925620, alimNodom:1371625,compra:1696014,pctAlim:0.738,concDir:3, concInd:10},
+ {n:"BJ R. XV de Novembro",     c:"Bom Jesus",      hab:3460,  dom:1574, fluxo:33188, rendaPC:5588.50, rendaDom:12284.77,rendaTotal:19.34, classeAB:0.495,adultos:0.385,auto:0.544,alimTotal:2030851,alimFora:852230, alimNodom:1178605,compra:1454278,pctAlim:0.716,concDir:4, concInd:15},
+ {n:"Itp. R. Dra. Darci Vargas",c:"Itaperuna",      hab:4540,  dom:1979, fluxo:50863, rendaPC:3103.00, rendaDom:7118.54, rendaTotal:14.09, classeAB:0.263,adultos:0.426,auto:0.471,alimTotal:1599631,alimFora:601821, alimNodom:997801, compra:1237962,pctAlim:0.774,concDir:3, concInd:7},
+ {n:"Itp. Av. Pres. Dutra",     c:"Itaperuna",      hab:3382,  dom:1574, fluxo:17443, rendaPC:4665.20, rendaDom:10023.96,rendaTotal:15.78, classeAB:0.469,adultos:0.421,auto:0.601,alimTotal:1691508,alimFora:696729, alimNodom:994767, compra:1228795,pctAlim:0.726,concDir:2, concInd:8},
+ {n:"Itp. R. Vinhosa",          c:"Itaperuna",      hab:6816,  dom:2995, fluxo:11588, rendaPC:2230.57, rendaDom:5076.31, rendaTotal:15.20, classeAB:0.207,adultos:0.424,auto:0.524,alimTotal:1947316,alimFora:643957, alimNodom:1303354,compra:1625436,pctAlim:0.835,concDir:1, concInd:14},
+ {n:"Itaocara Rua São José",    c:"Itaocara",       hab:4864,  dom:2178, fluxo:19279, rendaPC:3329.62, rendaDom:7435.85, rendaTotal:16.20, classeAB:0.348,adultos:0.394,auto:0.494,alimTotal:1864888,alimFora:710257, alimNodom:1154620,compra:1431677,pctAlim:0.768,concDir:4, concInd:25},
+ {n:"Miracema R. Mal. Floriano",c:"Miracema",       hab:2645,  dom:1132, fluxo:22138, rendaPC:5781.44, rendaDom:13508.75,rendaTotal:15.29, classeAB:0.523,adultos:0.364,auto:0.472,alimTotal:1569578,alimFora:673360, alimNodom:896204, compra:1104190,pctAlim:0.703,concDir:4, concInd:11},
+ {n:"Itp. Rua Rafael Vasc.",    c:"Itaperuna",      hab:6008,  dom:2462, fluxo:14484, rendaPC:2205.99, rendaDom:5383.27, rendaTotal:13.25, classeAB:0.232,adultos:0.405,auto:0.480,alimTotal:1665062,alimFora:572477, alimNodom:1092579,compra:1360202,pctAlim:0.817,concDir:3, concInd:9},
+ {n:"Itp. Rua Júlio César",     c:"Itaperuna",      hab:2656,  dom:1177, fluxo:38576, rendaPC:4743.79, rendaDom:10704.76,rendaTotal:12.60, classeAB:0.467,adultos:0.387,auto:0.548,alimTotal:1322655,alimFora:551023, alimNodom:771621, compra:952417, pctAlim:0.720,concDir:4, concInd:15},
+ {n:"Pádua Av. Nilo Peçanha",   c:"Sto. A. de Pádua",hab:2189,dom:980,  fluxo:12264, rendaPC:4832.43, rendaDom:10794.08,rendaTotal:10.58, classeAB:0.475,adultos:0.383,auto:0.571,alimTotal:1121175,alimFora:465753, alimNodom:655413, compra:808871, pctAlim:0.721,concDir:1, concInd:7},
+ {n:"Pádua R. Cons. Paulino",   c:"Sto. A. de Pádua",hab:2023,dom:899,  fluxo:29716, rendaPC:5289.09, rendaDom:11901.93,rendaTotal:10.70, classeAB:0.494,adultos:0.386,auto:0.576,alimTotal:1134371,alimFora:472998, alimNodom:661364, compra:816063, pctAlim:0.719,concDir:6, concInd:24},
+ {n:"Itaocara Rua W. L. Rimes", c:"Itaocara",       hab:4002,  dom:2005, fluxo:15935, rendaPC:2861.07, rendaDom:5710.72, rendaTotal:11.45, classeAB:0.281,adultos:0.394,auto:0.497,alimTotal:1462936,alimFora:531981, alimNodom:930948, compra:1156662,pctAlim:0.791,concDir:4, concInd:22},
+ {n:"Italva R. A. Fonseca",     c:"Italva",         hab:1649,  dom:731,  fluxo:8208,  rendaPC:3238.51, rendaDom:7305.48, rendaTotal:5.34,  classeAB:0.284,adultos:0.373,auto:0.484,alimTotal:654144, alimFora:231655, alimNodom:422486, compra:525634, pctAlim:0.803,concDir:2, concInd:6},
+ {n:"Italva Av. Cel. Luís Sales",c:"Italva",        hab:1548,  dom:686,  fluxo:9887,  rendaPC:3149.43, rendaDom:7106.87, rendaTotal:4.88,  classeAB:0.263,adultos:0.380,auto:0.483,alimTotal:599956, alimFora:210055, alimNodom:389899, compra:485306, pctAlim:0.809,concDir:3, concInd:7},
+],
+"1km":[
+ {n:"Itp. Rua Júlio César",     c:"Itaperuna",      hab:18111,dom:8022, fluxo:84331, rendaPC:3101.79, rendaDom:7002.82, rendaTotal:56.18, classeAB:0.301,adultos:0.405,auto:0.527,alimTotal:6465153,alimFora:2425332,alimNodom:4039786,compra:5013272,pctAlim:0.775,concDir:10,concInd:45},
+ {n:"Itp. Av. Pres. Dutra",     c:"Itaperuna",      hab:11486,dom:5125, fluxo:38779, rendaPC:4150.35, rendaDom:9301.64, rendaTotal:47.67, classeAB:0.417,adultos:0.411,auto:0.597,alimTotal:5178305,alimFora:2092782,alimNodom:3085487,compra:3814600,pctAlim:0.737,concDir:6, concInd:24},
+ {n:"BJ R. XV de Novembro",     c:"Bom Jesus",      hab:16140,dom:6852, fluxo:40598, rendaPC:3386.48, rendaDom:7976.91, rendaTotal:54.66, classeAB:0.317,adultos:0.400,auto:0.536,alimTotal:6259032,alimFora:2372848,alimNodom:3886149,compra:4818059,pctAlim:0.770,concDir:11,concInd:36},
+ {n:"Itp. R. Dra. Darci Vargas",c:"Itaperuna",      hab:12994,dom:5734, fluxo:81201, rendaPC:3524.42, rendaDom:7986.79, rendaTotal:45.80, classeAB:0.338,adultos:0.411,auto:0.503,alimTotal:5075172,alimFora:1987746,alimNodom:3087395,compra:3822879,pctAlim:0.753,concDir:10,concInd:38},
+ {n:"BJ Aristides Figueiredo",  c:"Bom Jesus",      hab:16469,dom:6783, fluxo:40719, rendaPC:3082.37, rendaDom:7483.95, rendaTotal:50.76, classeAB:0.288,adultos:0.394,auto:0.537,alimTotal:5903504,alimFora:2191479,alimNodom:3711994,compra:4606840,pctAlim:0.780,concDir:11,concInd:34},
+ {n:"Itp. R. Vinhosa",          c:"Itaperuna",      hab:16089,dom:6713, fluxo:50832, rendaPC:2324.72, rendaDom:5571.64, rendaTotal:37.40, classeAB:0.210,adultos:0.417,auto:0.523,alimTotal:4616335,alimFora:1583880,alimNodom:3032439,compra:3775731,pctAlim:0.818,concDir:4, concInd:26},
+ {n:"Itp. Rua Rafael Vasc.",    c:"Itaperuna",      hab:16757,dom:6666, fluxo:29879, rendaPC:2294.51, rendaDom:5767.94, rendaTotal:38.45, classeAB:0.228,adultos:0.411,auto:0.482,alimTotal:4704563,alimFora:1647852,alimNodom:3056692,compra:3802302,pctAlim:0.808,concDir:7, concInd:25},
+ {n:"Miracema R. Mal. Floriano",c:"Miracema",       hab:14049,dom:5050, fluxo:26815, rendaPC:2850.00, rendaDom:7928.63, rendaTotal:40.04, classeAB:0.285,adultos:0.389,auto:0.475,alimTotal:4652891,alimFora:1723539,alimNodom:2929328,compra:3634174,pctAlim:0.781,concDir:7, concInd:32},
+ {n:"Pádua Av. Nilo Peçanha",   c:"Sto. A. de Pádua",hab:6749,dom:3003, fluxo:33452, rendaPC:4294.59, rendaDom:9651.75, rendaTotal:28.98, classeAB:0.402,adultos:0.396,auto:0.577,alimTotal:3211694,alimFora:1274605,alimNodom:1937068,compra:2397130,pctAlim:0.746,concDir:8, concInd:37},
+ {n:"Pádua R. Cons. Paulino",   c:"Sto. A. de Pádua",hab:6749,dom:3003, fluxo:33452, rendaPC:4294.59, rendaDom:9651.75, rendaTotal:28.98, classeAB:0.402,adultos:0.396,auto:0.577,alimTotal:3211694,alimFora:1274605,alimNodom:1937068,compra:2397130,pctAlim:0.746,concDir:8, concInd:39},
+ {n:"Itaocara Rua W. L. Rimes", c:"Itaocara",       hab:9809, dom:4104, fluxo:21586, rendaPC:2577.64, rendaDom:6160.84, rendaTotal:25.28, classeAB:0.254,adultos:0.406,auto:0.492,alimTotal:3057273,alimFora:1086926,alimNodom:1970334,compra:2449377,pctAlim:0.801,concDir:5, concInd:36},
+ {n:"Itaocara Rua São José",    c:"Itaocara",       hab:6504, dom:2891, fluxo:20711, rendaPC:3016.32, rendaDom:6785.94, rendaTotal:19.62, classeAB:0.303,adultos:0.401,auto:0.493,alimTotal:2311872,alimFora:853620, alimNodom:1458240,compra:1810588,pctAlim:0.783,concDir:5, concInd:37},
+ {n:"Italva R. A. Fonseca",     c:"Italva",         hab:5613, dom:2236, fluxo:12037, rendaPC:2400.64, rendaDom:6026.30, rendaTotal:13.47, classeAB:0.198,adultos:0.393,auto:0.483,alimTotal:1720474,alimFora:570135, alimNodom:1150334,compra:1433881,pctAlim:0.833,concDir:4, concInd:14},
+ {n:"Italva Av. Cel. Luís Sales",c:"Italva",        hab:5582, dom:2422, fluxo:13334, rendaPC:2672.88, rendaDom:6160.21, rendaTotal:14.92, classeAB:0.218,adultos:0.393,auto:0.479,alimTotal:1887482,alimFora:635891, alimNodom:1251585,compra:1559751,pctAlim:0.826,concDir:5, concInd:16},
+],
+"2km":[
+ {n:"Itp. R. Dra. Darci Vargas",c:"Itaperuna",      hab:53945,dom:22899,fluxo:108215,rendaPC:3000.30, rendaDom:7068.06, rendaTotal:161.85,classeAB:0.295,adultos:0.415,auto:0.525,alimTotal:18715497,alimFora:7000727,alimNodom:11714672,compra:14536292,pctAlim:0.777,concDir:25,concInd:91},
+ {n:"Itp. Rua Júlio César",     c:"Itaperuna",      hab:51642,dom:22185,fluxo:108219,rendaPC:2973.62, rendaDom:6921.95, rendaTotal:153.56,classeAB:0.287,adultos:0.421,auto:0.525,alimTotal:17843371,alimFora:6635922,alimNodom:11207358,compra:13911811,pctAlim:0.780,concDir:22,concInd:103},
+ {n:"Itp. Av. Pres. Dutra",     c:"Itaperuna",      hab:44271,dom:19021,fluxo:103762,rendaPC:3189.49, rendaDom:7423.48, rendaTotal:141.20,classeAB:0.314,adultos:0.420,auto:0.546,alimTotal:16131683,alimFora:6124082,alimNodom:10007512,compra:12410695,pctAlim:0.769,concDir:19,concInd:79},
+ {n:"Itp. R. Vinhosa",          c:"Itaperuna",      hab:45623,dom:19667,fluxo:106167,rendaPC:2933.92, rendaDom:6806.03, rendaTotal:133.85,classeAB:0.281,adultos:0.422,auto:0.527,alimTotal:15572963,alimFora:5770892,alimNodom:9801992, compra:12169318,pctAlim:0.781,concDir:18,concInd:86},
+ {n:"BJ Aristides Figueiredo",  c:"Bom Jesus",      hab:34000,dom:14099,fluxo:47822, rendaPC:2830.59, rendaDom:6826.02, rendaTotal:96.24, classeAB:0.253,adultos:0.411,auto:0.533,alimTotal:11469680,alimFora:4123093,alimNodom:7346536, compra:9129718, pctAlim:0.796,concDir:15,concInd:72},
+ {n:"BJ R. XV de Novembro",     c:"Bom Jesus",      hab:34000,dom:14099,fluxo:47822, rendaPC:2830.59, rendaDom:6826.02, rendaTotal:96.24, classeAB:0.253,adultos:0.411,auto:0.533,alimTotal:11469680,alimFora:4123093,alimNodom:7346536, compra:9129718, pctAlim:0.796,concDir:16,concInd:74},
+ {n:"Itp. Rua Rafael Vasc.",    c:"Itaperuna",      hab:35281,dom:14420,fluxo:99160, rendaPC:2615.47, rendaDom:6399.20, rendaTotal:92.28, classeAB:0.257,adultos:0.413,auto:0.485,alimTotal:10941310,alimFora:3969202,alimNodom:6972058, compra:8661920, pctAlim:0.792,concDir:19,concInd:59},
+ {n:"Pádua Av. Nilo Peçanha",   c:"Sto. A. de Pádua",hab:16854,dom:7068,fluxo:39361, rendaPC:3387.99, rendaDom:8078.83, rendaTotal:57.10, classeAB:0.314,adultos:0.408,auto:0.575,alimTotal:6611836, alimFora:2482427,alimNodom:4129374, compra:5123286, pctAlim:0.775,concDir:8, concInd:50},
+ {n:"Pádua R. Cons. Paulino",   c:"Sto. A. de Pádua",hab:16854,dom:7068,fluxo:39361, rendaPC:3387.99, rendaDom:8078.83, rendaTotal:57.10, classeAB:0.314,adultos:0.408,auto:0.575,alimTotal:6611836, alimFora:2482427,alimNodom:4129374, compra:5123286, pctAlim:0.775,concDir:8, concInd:54},
+ {n:"Miracema R. Mal. Floriano",c:"Miracema",       hab:23370,dom:8077, fluxo:28240, rendaPC:2419.61, rendaDom:7000.89, rendaTotal:56.55, classeAB:0.237,adultos:0.390,auto:0.478,alimTotal:6777899, alimFora:2408179,alimNodom:4369690, compra:5428991, pctAlim:0.801,concDir:9, concInd:44},
+ {n:"Itaocara Rua São José",    c:"Itaocara",       hab:13327,dom:5478, fluxo:22914, rendaPC:2538.93, rendaDom:6176.77, rendaTotal:33.84, classeAB:0.253,adultos:0.414,auto:0.495,alimTotal:4116072, alimFora:1457671,alimNodom:2658384, compra:3305321, pctAlim:0.803,concDir:5, concInd:41},
+ {n:"Itaocara Rua W. L. Rimes", c:"Itaocara",       hab:13327,dom:5478, fluxo:22914, rendaPC:2538.93, rendaDom:6176.77, rendaTotal:33.84, classeAB:0.253,adultos:0.414,auto:0.495,alimTotal:4116072, alimFora:1457671,alimNodom:2658384, compra:3305321, pctAlim:0.803,concDir:5, concInd:41},
+ {n:"Italva R. A. Fonseca",     c:"Italva",         hab:10955,dom:4400, fluxo:14314, rendaPC:2332.88, rendaDom:5808.35, rendaTotal:25.56, classeAB:0.189,adultos:0.402,auto:0.484,alimTotal:3283776, alimFora:1079070,alimNodom:2204696, compra:2748722, pctAlim:0.837,concDir:5, concInd:21},
+ {n:"Italva Av. Cel. Luís Sales",c:"Italva",        hab:10302,dom:4144, fluxo:14261, rendaPC:2362.47, rendaDom:5873.10, rendaTotal:24.34, classeAB:0.195,adultos:0.403,auto:0.484,alimTotal:3118429, alimFora:1029965,alimNodom:2088454, compra:2603418, pctAlim:0.834,concDir:5, concInd:21},
+]
+};
+
+// ─── MAPEAMENTO INDICADOR → CAMPO ────────────────────────────────────────────
+const IND_FIELD = {
+  alimNodom:"alimNodom", alimTotal:"alimTotal", alimFora:"alimFora", pctAlim:"pctAlim",
+  rendaTotal:"rendaTotal", rendaDom:"rendaDom", rendaPC:"rendaPC", classeAB:"classeAB",
+  fluxo:"fluxo", dom:"dom", hab:"hab", auto:"auto",
+  adultos:"adultos", compra:"compra",
+  concDir:"concDir", concInd:"concInd"
+};
+const IND_INV = {concDir:true, concInd:true};
+
+// ─── ESTADO ──────────────────────────────────────────────────────────────────
+let W = {}, curRaio = "500m", filterCat = "ALL", sortK = "ipsm", sortD = "desc", search = "";
+let barChartInst = null, radarChartInst = null, scatterChartInst = null;
+
+// ─── NORMALIZAÇÃO ─────────────────────────────────────────────────────────────
+function computeNorms(arr) {
+  const fields = INDICATORS.map(i => i.key);
+  const mins = {}, maxs = {};
+  fields.forEach(k => {
+    const vals = arr.map(d => d[IND_FIELD[k]]);
+    mins[k] = Math.min(...vals);
+    maxs[k] = Math.max(...vals);
+  });
+  return arr.map(d => {
+    const nm = {};
+    fields.forEach(k => {
+      const v = d[IND_FIELD[k]];
+      const range = maxs[k] - mins[k];
+      if (range === 0) { nm[k] = 0.5; return; }
+      nm[k] = IND_INV[k] ? (maxs[k]-v)/range : (v-mins[k])/range;
+    });
+    return nm;
+  });
+}
+
+function computeIPSM(nm) {
+  return INDICATORS.reduce((s,ind) => s + nm[ind.key] * (W[ind.key]/100), 0);
+}
+
+function pctile(arr, p) {
+  const s = [...arr].sort((a,b) => a-b);
+  const i = p*(s.length-1), lo = Math.floor(i), hi = Math.ceil(i);
+  return s[lo] + (i-lo)*(s[hi]-s[lo]);
+}
+
+function classify(sc, all) {
+  const p20=pctile(all,0.20),p40=pctile(all,0.40),p60=pctile(all,0.60),p80=pctile(all,0.80),p95=pctile(all,0.95);
+  if(sc>p95||sc>p80) return "MUITO ALTO";
+  if(sc>p60) return "ALTO";
+  if(sc>p40) return "MÉDIO";
+  if(sc>p20) return "BAIXO";
+  return "MUITO BAIXO";
+}
+
+function getResults() {
+  const arr = RAW_DATA[curRaio];
+  const norms = computeNorms(arr);
+  const scored = arr.map((d,i) => ({...d, nm:norms[i], ipsm:computeIPSM(norms[i])}));
+  const all = scored.map(r => r.ipsm);
+  return scored.map(r => ({...r, cat:classify(r.ipsm,all)}))
+               .sort((a,b) => b.ipsm-a.ipsm)
+               .map((r,i) => ({...r, rank:i+1}));
+}
+
+// ─── HELPERS VISUAIS ──────────────────────────────────────────────────────────
+function catCls(c){return c==="MUITO ALTO"?"bma":c==="ALTO"?"ba":c==="MÉDIO"?"bm":c==="BAIXO"?"bb":"bmb";}
+function catLabel(c){return c==="MUITO ALTO"?"Muito Alto":c==="ALTO"?"Alto":c==="MÉDIO"?"Médio":c==="BAIXO"?"Baixo":"Muito Baixo";}
+function barColor(c){return c==="MUITO ALTO"?"#43939D":c==="ALTO"?"#9F7FCC":c==="MÉDIO"?"#E8C84A":c==="BAIXO"?"#D4734A":"#A03030";}
+
+function updateTotals() {
+  const t = INDICATORS.reduce((s,i) => s+W[i.key], 0);
+  const cls = "total-val " + (t===100?"ok":Math.abs(t-100)<=5?"near":"bad");
+  const txt = t+"%";
+  ["totalVal","totalVal2","totalVal3"].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){el.textContent=txt;el.className=cls;}
+  });
+}
+
+// ─── SLIDERS ──────────────────────────────────────────────────────────────────
+const GRP_COLORS = {
+  "Mercado de Alimentação":"#43939D",
+  "Renda e Potencial":"#9F7FCC",
+  "Volume e Fluxo":"#E8C84A",
+  "Perfil do Consumidor":"#D4734A",
+  "Concorrência (inverso)":"#A03030"
+};
+
+function buildSidebarSet(containerId, pfx) {
+  const grps = {};
+  INDICATORS.forEach(ind => {
+    if(!grps[ind.grp]) grps[ind.grp] = [];
+    grps[ind.grp].push(ind);
+  });
+  let html = "";
+  for(const [g, inds] of Object.entries(grps)) {
+    const col = GRP_COLORS[g] || "var(--p3)";
+    const pct = inds.reduce((s,i)=>s+W[i.key],0);
+    const grpId = pfx+"g-"+g.replace(/[^a-zA-Z]/g,"");
+    html += `<div class="grp-title" id="${grpId}" style="color:${col}">${g} · <span id="${grpId}-pct">${pct}</span>%</div>`;
+    inds.forEach(ind => {
+      const fill = Math.round(W[ind.key]/40*100);
+      html += `<div class="w-item">
+        <div class="w-head">
+          <span class="w-name">${ind.label}</span>
+          <span class="w-pct" id="${pfx}v-${ind.key}">${W[ind.key]}%</span>
+        </div>
+        <input type="range" class="w-slider" id="${pfx}s-${ind.key}" min="0" max="40" step="1" value="${W[ind.key]}"
+          style="background-size:${fill}% 100%">
+      </div>`;
+    });
+  }
+  document.getElementById(containerId).innerHTML = html;
+
+  INDICATORS.forEach(ind => {
+    const sl = document.getElementById(pfx+"s-"+ind.key);
+    sl.addEventListener("input", () => {
+      const nv = +sl.value;
+      const otherSum = INDICATORS.reduce((s,x) => x.key===ind.key ? s : s+W[x.key], 0);
+      W[ind.key] = (otherSum+nv>100) ? Math.max(0,100-otherSum) : nv;
+      syncAllSliders(); updateTotals(); render();
+    });
+  });
+}
+
+function syncAllSliders() {
+  // Group indicators by group for fast sum
+  const grpSums = {};
+  INDICATORS.forEach(ind => {
+    grpSums[ind.grp] = (grpSums[ind.grp]||0) + W[ind.key];
+  });
+
+  ["r","c","d"].forEach(pfx => {
+    // Update individual slider values
+    INDICATORS.forEach(ind => {
+      const sl = document.getElementById(pfx+"s-"+ind.key);
+      const vl = document.getElementById(pfx+"v-"+ind.key);
+      if(sl){sl.value=W[ind.key];sl.style.backgroundSize=(Math.round(W[ind.key]/40*100))+"%100%";}
+      if(vl) vl.textContent=W[ind.key]+"%";
+    });
+    // Update group total labels
+    Object.entries(grpSums).forEach(([g, sum]) => {
+      const el = document.getElementById(pfx+"g-"+g.replace(/[^a-zA-Z]/g,"")+"-pct");
+      if(el) el.textContent = sum;
+    });
+  });
+}
+
+function resetW() { INDICATORS.forEach(i => W[i.key]=i.dw); }
+
+// ─── TOP 5 ────────────────────────────────────────────────────────────────────
+function renderTop5(results) {
+  const rc = ["r1","r2","r3","r4","r5"];
+  document.getElementById("top5").innerHTML = results.slice(0,5).map((r,i) => `
+    <div class="t5-card ${rc[i]}">
+      <div class="t5-rank">#${i+1}</div>
+      <div class="t5-cidade">${r.c}</div>
+      <div class="t5-name">${r.n.replace(r.c+" ","").replace(/^(BJ|Itp\.|Pádua|Itaocara|Miracema|Italva)\s*/,"")}</div>
+      <div class="t5-score">${r.ipsm.toFixed(4)}</div>
+      <span class="badge ${catCls(r.cat)}">${catLabel(r.cat)}</span>
+    </div>`).join("");
+}
+
+// ─── TABELA RANKING ────────────────────────────────────────────────────────────
+function buildHead() {
+  const cols = [{k:"rank",l:"#"},{k:"nome",l:"Ponto"},{k:"ipsm",l:"IPSM"},{k:"_bar",l:""},{k:"cat",l:"Classificação"}];
+  const ths = cols.map(col => {
+    const s = col.k==="rank"?"width:26px":col.k==="_bar"?"width:80px;cursor:default":"";
+    const arrow = col.k!=="rank"&&col.k!=="_bar"?`<span class="si ${sortK===col.k?"act":""}">${sortK===col.k?(sortD==="desc"?"↓":"↑"):"↕"}</span>`:"";
+    return `<th data-s="${col.k}" style="${s}">${col.l}${arrow}</th>`;
+  }).join("");
+  document.getElementById("tHead").innerHTML = `<tr>${ths}</tr>`;
+  document.querySelectorAll("th[data-s]").forEach(th => {
+    if(th.dataset.s==="rank"||th.dataset.s==="_bar") return;
+    th.addEventListener("click", () => {
+      if(sortK===th.dataset.s) sortD=sortD==="desc"?"asc":"desc";
+      else{sortK=th.dataset.s;sortD="desc";}
+      buildHead(); render();
+    });
+  });
+}
+
+function buildFilters() {
+  const opts = [
+    {k:"ALL",l:"Todos",c:""},{k:"MUITO ALTO",l:"Muito Alto",c:"fma"},
+    {k:"ALTO",l:"Alto",c:"fa"},{k:"MÉDIO",l:"Médio",c:"fm"},
+    {k:"BAIXO",l:"Baixo",c:"fb"},{k:"MUITO BAIXO",l:"Muito Baixo",c:"fmb"},
+  ];
+  document.getElementById("fRow").innerHTML = opts.map(o =>
+    `<button class="f-btn ${o.c} ${filterCat===o.k?"on":""}" data-f="${o.k}">${o.l}</button>`
+  ).join("");
+  document.querySelectorAll(".f-btn").forEach(b => b.addEventListener("click", () => {
+    filterCat=b.dataset.f; buildFilters(); render();
+  }));
+}
+
+function renderTable(results) {
+  const max = results[0].ipsm;
+  let rows = [...results];
+  if(filterCat!=="ALL") rows = rows.filter(r=>r.cat===filterCat);
+  if(search) rows = rows.filter(r=>
+    r.n.toLowerCase().includes(search.toLowerCase())||
+    r.c.toLowerCase().includes(search.toLowerCase())
+  );
+  if(sortK==="ipsm") rows.sort((a,b)=>sortD==="desc"?b.ipsm-a.ipsm:a.ipsm-b.ipsm);
+  else if(sortK==="nome") rows.sort((a,b)=>sortD==="desc"?b.n.localeCompare(a.n):a.n.localeCompare(b.n));
+  else if(sortK==="cat") rows.sort((a,b)=>sortD==="desc"?b.cat.localeCompare(a.cat):a.cat.localeCompare(b.cat));
+  document.getElementById("tCount").textContent=rows.length+" pontos";
+  document.getElementById("tBody").innerHTML=rows.map(r=>`
+    <tr>
+      <td class="rk">${r.rank}°</td>
+      <td>
+        <div class="bn">${r.n}</div>
+        <div class="cidade-cell">${r.c}</div>
+      </td>
+      <td class="sc" style="color:${barColor(r.cat)}">${r.ipsm.toFixed(4)}</td>
+      <td><div class="bar-w"><div class="bar-f" style="width:${(r.ipsm/max*100).toFixed(1)}%;background:${barColor(r.cat)}"></div></div></td>
+      <td><span class="badge ${catCls(r.cat)}">${catLabel(r.cat)}</span></td>
+    </tr>`).join("");
+}
+
+// ─── GRÁFICO BARRAS ────────────────────────────────────────────────────────────
+function renderBarChart(results) {
+  const sorted = [...results].sort((a,b)=>a.ipsm-b.ipsm);
+  const labels = sorted.map(r=>r.n);
+  const data = sorted.map(r=>parseFloat(r.ipsm.toFixed(4)));
+  const colors = sorted.map(r=>barColor(r.cat));
+
+  const ctx = document.getElementById("barChart").getContext("2d");
+  if(barChartInst){barChartInst.destroy();barChartInst=null;}
+  barChartInst = new Chart(ctx,{
+    type:"bar",
+    data:{labels,datasets:[{label:"IPSM",data,backgroundColor:colors,borderRadius:3,borderSkipped:false}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,indexAxis:"y",
+      animation:{duration:300},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          title:items=>sorted[items[0].dataIndex].n,
+          afterTitle:items=>"  "+sorted[items[0].dataIndex].c,
+          label:c=>" IPSM: "+c.raw.toFixed(4),
+          afterLabel:c=>" "+catLabel(sorted[c.dataIndex].cat)
+        }}
+      },
+      scales:{
+        x:{min:0,max:1,ticks:{stepSize:0.1,color:"rgba(145,128,168,0.7)",font:{size:10,family:"DM Mono"}},
+           grid:{color:"rgba(112,48,160,0.08)"},border:{color:"rgba(112,48,160,0.15)"}},
+        y:{ticks:{color:"rgba(240,235,248,0.8)",font:{size:11,family:"Outfit"}},
+           grid:{display:false},border:{display:false}}
+      }
+    }
+  });
+}
+
+// ─── RADAR MÉDIAS ─────────────────────────────────────────────────────────────
+function renderStackedChart(results) {
+  // For each point, compute the weighted contribution of each group
+  // contribution = sum of (norm * weight/100) for all indicators in the group
+  const grpNames = [...new Set(INDICATORS.map(i => i.grp))];
+  const GRP_PALETTE = {
+    "Mercado de Alimentação":  "#43939D",
+    "Renda e Potencial":       "#9F7FCC",
+    "Volume e Fluxo":          "#E8C84A",
+    "Perfil do Consumidor":    "#D4734A",
+    "Concorrência (inverso)":  "#A05080",
+  };
+
+  // Sort results by IPSM descending (already sorted but just in case)
+  const sorted = [...results].sort((a,b) => b.ipsm - a.ipsm);
+  const labels = sorted.map(r => r.n.length > 20 ? r.n.substring(0,19)+"…" : r.n);
+
+  const datasets = grpNames.map(grp => {
+    const inds = INDICATORS.filter(i => i.grp === grp);
+    const data = sorted.map(r =>
+      parseFloat(inds.reduce((s, ind) => s + r.nm[ind.key] * (W[ind.key]/100), 0).toFixed(4))
+    );
+    return {
+      label: grp,
+      data,
+      backgroundColor: GRP_PALETTE[grp] || "#7030A0",
+      borderWidth: 0,
+      borderRadius: 0,
+    };
+  });
+
+  const ctx = document.getElementById("stackedChart").getContext("2d");
+  if(radarChartInst){radarChartInst.destroy();radarChartInst=null;}
+  radarChartInst = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: "y",
+      animation: { duration: 300 },
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: "rgba(145,128,168,0.85)",
+            font: { size: 10, family: "DM Mono" },
+            boxWidth: 10, padding: 14
+          }
+        },
+        tooltip: {
+          callbacks: {
+            title: items => sorted[items[0].dataIndex].n,
+            label: c => ` ${c.dataset.label}: ${c.raw.toFixed(4)}`,
+            footer: items => {
+              const total = items.reduce((s,i) => s + i.raw, 0);
+              return `  IPSM total: ${total.toFixed(4)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          min: 0, max: 1,
+          ticks: { stepSize: 0.1, color: "rgba(145,128,168,0.7)", font: { size: 10, family: "DM Mono" } },
+          grid: { color: "rgba(112,48,160,0.08)" },
+          border: { color: "rgba(112,48,160,0.15)" }
+        },
+        y: {
+          stacked: true,
+          ticks: { color: "rgba(240,235,248,0.8)", font: { size: 11, family: "Outfit" } },
+          grid: { display: false },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+// ─── TABELA DETALHADA ─────────────────────────────────────────────────────────
+const IND_FMT = {
+  alimNodom:(v)=>"R$"+Math.round(v/1000)+"k",  alimTotal:(v)=>"R$"+Math.round(v/1000)+"k",
+  alimFora:(v)=>"R$"+Math.round(v/1000)+"k",    pctAlim:(v)=>(v*100).toFixed(1)+"%",
+  rendaTotal:(v)=>v.toFixed(2)+" Mi",           rendaDom:(v)=>"R$"+Math.round(v).toLocaleString("pt-BR"),
+  rendaPC:(v)=>"R$"+Math.round(v).toLocaleString("pt-BR"), classeAB:(v)=>(v*100).toFixed(1)+"%",
+  fluxo:(v)=>Math.round(v).toLocaleString("pt-BR"), dom:(v)=>Math.round(v).toLocaleString("pt-BR"),
+  hab:(v)=>Math.round(v).toLocaleString("pt-BR"),    auto:(v)=>(v*100).toFixed(1)+"%",
+  adultos:(v)=>(v*100).toFixed(1)+"%",           compra:(v)=>"R$"+Math.round(v/1000)+"k",
+  concDir:(v)=>Math.round(v)+" dir.",            concInd:(v)=>Math.round(v)+" ind."
+};
+
+function renderDetailTable(results) {
+  const head = document.getElementById("indHead");
+  const body = document.getElementById("indBody");
+  let hCols = `<th class="sticky-col">Ponto</th><th>Rank</th><th>IPSM</th><th>Classe</th>`;
+  INDICATORS.forEach(i => {
+    hCols += `<th title="${i.grp}">${i.label}<br><span style="opacity:0.4;font-size:9px;font-weight:400">${i.dw}%</span></th>`;
+    hCols += `<th style="color:var(--p3)">Norm</th>`;
+  });
+  head.innerHTML = `<tr>${hCols}</tr>`;
+
+  const catColorMap={"MUITO ALTO":"cat-ma","ALTO":"cat-a","MÉDIO":"cat-m","BAIXO":"cat-b","MUITO BAIXO":"cat-mb"};
+  body.innerHTML = results.map(r => {
+    let tds = `<td class="sticky-col"><div style="font-weight:600">${r.n}</div><div style="font-size:10px;color:var(--muted)">${r.c}</div></td>`;
+    tds += `<td class="ind-num" style="color:var(--dim)">${r.rank}°</td>`;
+    tds += `<td class="ind-num" style="color:${barColor(r.cat)};font-weight:700">${r.ipsm.toFixed(4)}</td>`;
+    tds += `<td><span class="badge ${catCls(r.cat)}">${catLabel(r.cat)}</span></td>`;
+    INDICATORS.forEach(ind => {
+      const raw = r[IND_FIELD[ind.key]];
+      const norm = r.nm[ind.key];
+      const pct = Math.round(norm*100);
+      tds += `<td class="ind-num">${IND_FMT[ind.key]?IND_FMT[ind.key](raw):raw}</td>`;
+      tds += `<td class="ind-norm">${norm.toFixed(3)}<span class="norm-bar-w"><span class="norm-bar-f" style="width:${pct}%"></span></span></td>`;
+    });
+    return `<tr>${tds}</tr>`;
+  }).join("");
+}
+
+// ─── RENDER PRINCIPAL ─────────────────────────────────────────────────────────
+function render() {
+  const results = getResults();
+  renderTop5(results);
+  renderTable(results);
+  const curTab = document.querySelector(".tab-btn.active")?.dataset.tab;
+  if(curTab==="chart") { renderBarChart(results); renderStackedChart(results); }
+  if(curTab==="detail") renderDetailTable(results);
+  updateTotals();
+}
+
+// ─── FATURAMENTO DATA ─────────────────────────────────────────────────────────
+const FAT_DATA = [
+  {cidade:"Itaocara",ponto:"Rua São José",raio:"500m",hab:4864,dom:2178,fluxo:19279,rendaDom:7436,classAB:34.8,alimTotal:1864888,alimFora:710257,alimNoDom:1154620,lanches:38505,sanduiches:50631,almoco:560980,bebidas:160006,panificados:117890,leites:156009,aves:73125,carnes:200142,frutas:59082,legumes:37641,higiene:277057,ipsm500:"MÉDIO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Itaocara",ponto:"Rua São José",raio:"1km",hab:6504,dom:2891,fluxo:20711,rendaDom:6786,classAB:30.3,alimTotal:2311872,alimFora:853620,alimNoDom:1458240,lanches:45936,sanduiches:62691,almoco:669580,bebidas:196631,panificados:150480,leites:193468,aves:93344,carnes:254998,frutas:73352,legumes:46568,higiene:352348,ipsm500:"MÉDIO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Itaocara",ponto:"Rua São José",raio:"2km",hab:13327,dom:5478,fluxo:22914,rendaDom:6177,classAB:25.3,alimTotal:4116072,alimFora:1457671,alimNoDom:2658384,lanches:78006,sanduiches:111869,almoco:1131810,bebidas:346749,panificados:278063,leites:345099,aves:172292,carnes:468672,frutas:131344,legumes:82897,higiene:646937,ipsm500:"MÉDIO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Itaocara",ponto:"Rua Walter Luiz Rimes",raio:"500m",hab:4002,dom:2005,fluxo:15935,rendaDom:5711,classAB:28.1,alimTotal:1462936,alimFora:531981,alimNoDom:930948,lanches:28766,sanduiches:39898,almoco:414865,bebidas:124594,panificados:96588,leites:122720,aves:59731,carnes:162940,frutas:46698,legumes:29370,higiene:225714,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Itaocara",ponto:"Rua Walter Luiz Rimes",raio:"1km",hab:9809,dom:4104,fluxo:21586,rendaDom:6161,classAB:25.4,alimTotal:3057273,alimFora:1086926,alimNoDom:1970334,lanches:57958,sanduiches:82841,almoco:845810,bebidas:257050,panificados:205808,leites:256018,aves:127718,carnes:347577,frutas:97288,legumes:61678,higiene:479043,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Itaocara",ponto:"Rua Walter Luiz Rimes",raio:"2km",hab:13327,dom:5478,fluxo:22914,rendaDom:6177,classAB:25.3,alimTotal:4116072,alimFora:1457671,alimNoDom:2658384,lanches:78006,sanduiches:111869,almoco:1131810,bebidas:346749,panificados:278063,leites:345099,aves:172292,carnes:468672,frutas:131344,legumes:82897,higiene:646937,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Sto. Antônio de Pádua",ponto:"R. Conselheiro Paulino",raio:"500m",hab:2023,dom:899,fluxo:29716,rendaDom:11902,classAB:49.4,alimTotal:1134371,alimFora:472998,alimNoDom:661364,lanches:25689,sanduiches:30393,almoco:382638,bebidas:98654,panificados:65032,leites:94336,aves:40744,carnes:112118,frutas:35215,legumes:23190,higiene:154699,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Sto. Antônio de Pádua",ponto:"R. Conselheiro Paulino",raio:"1km",hab:6749,dom:3003,fluxo:33452,rendaDom:9652,classAB:40.2,alimTotal:3211694,alimFora:1274605,alimNoDom:1937068,lanches:68981,sanduiches:86504,almoco:1018495,bebidas:276828,panificados:194598,leites:267743,aves:121314,carnes:333122,frutas:100650,legumes:65157,higiene:460062,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Sto. Antônio de Pádua",ponto:"R. Conselheiro Paulino",raio:"2km",hab:16854,dom:7068,fluxo:39361,rendaDom:8079,classAB:31.4,alimTotal:6611836,alimFora:2482427,alimNoDom:4129374,lanches:133111,sanduiches:178344,almoco:1958493,bebidas:562192,panificados:423551,leites:552105,aves:263512,carnes:720864,frutas:208528,legumes:133586,higiene:993912,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Sto. Antônio de Pádua",ponto:"Av. Nilo Peçanha",raio:"500m",hab:2189,dom:980,fluxo:12264,rendaDom:10794,classAB:47.5,alimTotal:1121175,alimFora:465753,alimNoDom:655413,lanches:25159,sanduiches:29914,almoco:376952,bebidas:97081,panificados:64536,leites:93119,aves:40521,carnes:111501,frutas:34687,legumes:22941,higiene:153458,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Sto. Antônio de Pádua",ponto:"Av. Nilo Peçanha",raio:"1km",hab:6749,dom:3003,fluxo:33452,rendaDom:9652,classAB:40.2,alimTotal:3211694,alimFora:1274605,alimNoDom:1937068,lanches:68981,sanduiches:86504,almoco:1018495,bebidas:276828,panificados:194598,leites:267743,aves:121314,carnes:333122,frutas:100650,legumes:65157,higiene:460062,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Sto. Antônio de Pádua",ponto:"Av. Nilo Peçanha",raio:"2km",hab:16854,dom:7068,fluxo:39361,rendaDom:8079,classAB:31.4,alimTotal:6611836,alimFora:2482427,alimNoDom:4129374,lanches:133111,sanduiches:178344,almoco:1958493,bebidas:562192,panificados:423551,leites:552105,aves:263512,carnes:720864,frutas:208528,legumes:133586,higiene:993912,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Miracema",ponto:"R. Mal. Floriano",raio:"500m",hab:2645,dom:1132,fluxo:22138,rendaDom:13509,classAB:52.3,alimTotal:1569578,alimFora:673360,alimNoDom:896204,lanches:36171,sanduiches:41495,almoco:549910,bebidas:135911,panificados:86796,leites:129683,aves:54804,carnes:151812,frutas:48086,legumes:32292,higiene:207986,ipsm500:"BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Miracema",ponto:"R. Mal. Floriano",raio:"1km",hab:14049,dom:5050,fluxo:26815,rendaDom:7929,classAB:28.5,alimTotal:4652891,alimFora:1723539,alimNoDom:2929328,lanches:91841,sanduiches:125284,almoco:1358938,bebidas:392401,panificados:301923,leites:388435,aves:188211,carnes:512819,frutas:146870,legumes:94732,higiene:704846,ipsm500:"BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Miracema",ponto:"R. Mal. Floriano",raio:"2km",hab:23370,dom:8077,fluxo:28240,rendaDom:7001,classAB:23.7,alimTotal:6777899,alimFora:2408179,alimNoDom:4369690,lanches:127404,sanduiches:182709,almoco:1880349,bebidas:565921,panificados:456524,leites:566793,aves:284358,carnes:771596,frutas:214887,legumes:137894,higiene:1059301,ipsm500:"BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Italva",ponto:"Rua Antônio Ferreira da Fonseca",raio:"500m",hab:1649,dom:731,fluxo:8208,rendaDom:7305,classAB:28.4,alimTotal:654144,alimFora:231655,alimNoDom:422486,lanches:12435,sanduiches:17794,almoco:179399,bebidas:55370,panificados:44180,leites:54875,aves:27327,carnes:74545,frutas:20854,legumes:13051,higiene:103148,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Italva",ponto:"Rua Antônio Ferreira da Fonseca",raio:"1km",hab:5613,dom:2236,fluxo:12037,rendaDom:6026,classAB:19.8,alimTotal:1720474,alimFora:570135,alimNoDom:1150334,lanches:29926,sanduiches:46545,almoco:435423,bebidas:142409,panificados:122521,leites:144300,aves:75984,carnes:206129,frutas:54901,legumes:34431,higiene:283547,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Italva",ponto:"Rua Antônio Ferreira da Fonseca",raio:"2km",hab:10955,dom:4400,fluxo:14314,rendaDom:5808,classAB:18.9,alimTotal:3283776,alimFora:1079070,alimNoDom:2204696,lanches:56586,sanduiches:88920,almoco:822196,bebidas:271319,panificados:235344,leites:275519,aves:145896,carnes:395524,frutas:104966,legumes:65743,higiene:544026,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Italva",ponto:"Av. Cel. Luís Sales",raio:"500m",hab:1548,dom:686,fluxo:9887,rendaDom:7107,classAB:26.3,alimTotal:599956,alimFora:210055,alimNoDom:389899,lanches:11173,sanduiches:16234,almoco:162471,bebidas:50451,panificados:40895,leites:50261,aves:25353,carnes:69141,frutas:19050,legumes:11970,higiene:95407,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Italva",ponto:"Av. Cel. Luís Sales",raio:"1km",hab:5582,dom:2422,fluxo:13334,rendaDom:6160,classAB:21.8,alimTotal:1887482,alimFora:635891,alimNoDom:1251585,lanches:33521,sanduiches:51060,almoco:487219,bebidas:157113,panificados:132701,leites:158239,aves:82259,carnes:223725,frutas:60113,legumes:37639,higiene:308166,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Italva",ponto:"Av. Cel. Luís Sales",raio:"2km",hab:10302,dom:4144,fluxo:14261,rendaDom:5873,classAB:19.5,alimTotal:3118429,alimFora:1029965,alimNoDom:2088454,lanches:54145,sanduiches:84511,almoco:785545,bebidas:258188,panificados:222658,leites:261699,aves:137986,carnes:374165,frutas:99704,legumes:62416,higiene:514964,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
+  {cidade:"Itaperuna",ponto:"R. Vinhosa",raio:"500m",hab:6816,dom:2995,fluxo:11588,rendaDom:5076,classAB:20.7,alimTotal:1947316,alimFora:643957,alimNoDom:1303354,lanches:33678,sanduiches:52565,almoco:491290,bebidas:161043,panificados:138828,leites:163131,aves:86094,carnes:234218,frutas:62010,legumes:38793,higiene:322082,ipsm500:"ALTO",ipsm1k:"MÉDIO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"R. Vinhosa",raio:"1km",hab:16089,dom:6713,fluxo:50832,rendaDom:5572,classAB:21.0,alimTotal:4616335,alimFora:1583880,alimNoDom:3032439,lanches:82565,sanduiches:123697,almoco:1224914,bebidas:381966,panificados:319710,leites:385379,aves:199138,carnes:542539,frutas:145783,legumes:92742,higiene:743592,ipsm500:"ALTO",ipsm1k:"MÉDIO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"R. Vinhosa",raio:"2km",hab:45623,dom:19667,fluxo:106167,rendaDom:6806,classAB:28.1,alimTotal:15572963,alimFora:5770892,alimNoDom:9801992,lanches:305688,sanduiches:416972,almoco:4548937,bebidas:1312175,panificados:1009245,leites:1297354,aves:629800,carnes:1723924,frutas:488504,legumes:314602,higiene:2367326,ipsm500:"ALTO",ipsm1k:"MÉDIO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"Rua Rafael Vasconcelos",raio:"500m",hab:6008,dom:2462,fluxo:14484,rendaDom:5383,classAB:23.2,alimTotal:1665062,alimFora:572477,alimNoDom:1092579,lanches:30854,sanduiches:45671,almoco:439417,bebidas:140458,panificados:115328,leites:140117,aves:71101,carnes:193132,frutas:53670,legumes:33314,higiene:267623,ipsm500:"BAIXO",ipsm1k:"BAIXO",ipsm2k:"BAIXO"},
+  {cidade:"Itaperuna",ponto:"Rua Rafael Vasconcelos",raio:"1km",hab:16757,dom:6666,fluxo:29879,rendaDom:5768,classAB:22.8,alimTotal:4704563,alimFora:1647852,alimNoDom:3056692,lanches:87596,sanduiches:127502,almoco:1277310,bebidas:394144,panificados:320679,leites:394021,aves:198896,carnes:541213,frutas:149939,legumes:94766,higiene:745610,ipsm500:"BAIXO",ipsm1k:"BAIXO",ipsm2k:"BAIXO"},
+  {cidade:"Itaperuna",ponto:"Rua Rafael Vasconcelos",raio:"2km",hab:35281,dom:14420,fluxo:99160,rendaDom:6399,classAB:25.7,alimTotal:10941310,alimFora:3969202,alimNoDom:6972058,lanches:210668,sanduiches:294541,almoco:3109492,bebidas:919953,panificados:723243,leites:913526,aves:450147,carnes:1228894,frutas:345627,legumes:220980,higiene:1689862,ipsm500:"BAIXO",ipsm1k:"BAIXO",ipsm2k:"BAIXO"},
+  {cidade:"Itaperuna",ponto:"Av. Pres. Dutra (Cidade Nova)",raio:"500m",hab:3382,dom:1574,fluxo:17443,rendaDom:10024,classAB:46.9,alimTotal:1691508,alimFora:696729,alimNoDom:994767,lanches:37713,sanduiches:45319,almoco:561978,bebidas:146559,panificados:98316,leites:140554,aves:61505,carnes:169705,frutas:52610,legumes:34457,higiene:234028,ipsm500:"MÉDIO",ipsm1k:"ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"Av. Pres. Dutra (Cidade Nova)",raio:"1km",hab:11486,dom:5125,fluxo:38779,rendaDom:9302,classAB:41.7,alimTotal:5178305,alimFora:2092782,alimNoDom:3085487,lanches:112717,sanduiches:138504,almoco:1682428,bebidas:445929,panificados:307490,leites:430483,aves:192502,carnes:529581,frutas:161027,legumes:105448,higiene:729113,ipsm500:"MÉDIO",ipsm1k:"ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"Av. Pres. Dutra (Cidade Nova)",raio:"2km",hab:44271,dom:19021,fluxo:103762,rendaDom:7423,classAB:31.4,alimTotal:16131683,alimFora:6124082,alimNoDom:10007512,lanches:326452,sanduiches:432357,almoco:4853336,bebidas:1368495,panificados:1021939,leites:1343672,aves:637874,carnes:1747901,frutas:505454,legumes:326600,higiene:2403183,ipsm500:"MÉDIO",ipsm1k:"ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"Rua Júlio César",raio:"500m",hab:2656,dom:1177,fluxo:38576,rendaDom:10705,classAB:46.7,alimTotal:1322655,alimFora:551023,alimNoDom:771621,lanches:29377,sanduiches:34909,almoco:447537,bebidas:113505,panificados:75780,leites:109309,aves:47818,carnes:132194,frutas:40566,legumes:27120,higiene:180796,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"Rua Júlio César",raio:"1km",hab:18111,dom:8022,fluxo:84331,rendaDom:7003,classAB:30.1,alimTotal:6465153,alimFora:2425332,alimNoDom:4039786,lanches:128464,sanduiches:172738,almoco:1918334,bebidas:545595,panificados:414138,leites:538059,aves:258757,carnes:709098,frutas:202203,legumes:130744,higiene:973186,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"Rua Júlio César",raio:"2km",hab:51642,dom:22185,fluxo:108219,rendaDom:6922,classAB:28.7,alimTotal:17843371,alimFora:6635922,alimNoDom:11207358,lanches:352662,sanduiches:478724,almoco:5232038,bebidas:1507100,panificados:1152734,leites:1487339,aves:718727,carnes:1967331,frutas:560585,legumes:360466,higiene:2704453,ipsm500:"MUITO BAIXO",ipsm1k:"MUITO ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"R. Dra. Darci Vargas (Fiteiro)",raio:"500m",hab:4540,dom:1979,fluxo:50863,rendaDom:7119,classAB:26.3,alimTotal:1599631,alimFora:601821,alimNoDom:997801,lanches:31340,sanduiches:42170,almoco:478476,bebidas:133537,panificados:102081,leites:132491,aves:64199,carnes:176208,frutas:49451,legumes:32498,higiene:240161,ipsm500:"MÉDIO",ipsm1k:"ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"R. Dra. Darci Vargas (Fiteiro)",raio:"1km",hab:12994,dom:5734,fluxo:81201,rendaDom:7987,classAB:33.8,alimTotal:5075172,alimFora:1987746,alimNoDom:3087395,lanches:105649,sanduiches:135064,almoco:1590160,bebidas:431171,panificados:311452,leites:421264,aves:195258,carnes:536696,frutas:157692,legumes:103316,higiene:735684,ipsm500:"MÉDIO",ipsm1k:"ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Itaperuna",ponto:"R. Dra. Darci Vargas (Fiteiro)",raio:"2km",hab:53945,dom:22899,fluxo:108215,rendaDom:7068,classAB:29.5,alimTotal:18715497,alimFora:7000727,alimNoDom:11714672,lanches:372727,sanduiches:502393,almoco:5527727,bebidas:1583131,panificados:1202677,leites:1560246,aves:749964,carnes:2052072,frutas:588043,legumes:378674,higiene:2821620,ipsm500:"MÉDIO",ipsm1k:"ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Bom Jesus do Itabapoana",ponto:"R. XV de Novembro",raio:"500m",hab:3460,dom:1574,fluxo:33188,rendaDom:12285,classAB:49.5,alimTotal:2030851,alimFora:852230,alimNoDom:1178605,lanches:45906,sanduiches:54018,almoco:691545,bebidas:175769,panificados:115428,leites:168243,aves:72545,carnes:200601,frutas:62666,legumes:41549,higiene:275673,ipsm500:"ALTO",ipsm1k:"ALTO",ipsm2k:"BAIXO"},
+  {cidade:"Bom Jesus do Itabapoana",ponto:"R. XV de Novembro",raio:"1km",hab:16140,dom:6852,fluxo:40598,rendaDom:7977,classAB:31.7,alimTotal:6259032,alimFora:2372848,alimNoDom:3886149,lanches:126873,sanduiches:168202,almoco:1878861,bebidas:531725,panificados:397157,leites:521892,aves:247638,carnes:677795,frutas:196616,legumes:126789,higiene:932910,ipsm500:"ALTO",ipsm1k:"ALTO",ipsm2k:"BAIXO"},
+  {cidade:"Bom Jesus do Itabapoana",ponto:"R. XV de Novembro",raio:"2km",hab:34000,dom:14099,fluxo:47822,rendaDom:6826,classAB:25.3,alimTotal:11469680,alimFora:4123093,alimNoDom:7346536,lanches:217946,sanduiches:308167,almoco:3225235,bebidas:960973,panificados:764248,leites:957549,aves:476127,carnes:1298265,frutas:361853,legumes:231693,higiene:1783182,ipsm500:"ALTO",ipsm1k:"ALTO",ipsm2k:"BAIXO"},
+  {cidade:"Bom Jesus do Itabapoana",ponto:"Rua Aristides Figueiredo",raio:"500m",hab:4780,dom:2029,fluxo:32957,rendaDom:10416,classAB:40.6,alimTotal:2297261,alimFora:925620,alimNoDom:1371625,lanches:49697,sanduiches:61339,almoco:744162,bebidas:197256,panificados:136839,leites:190815,aves:85730,carnes:235943,frutas:71382,legumes:46822,higiene:324389,ipsm500:"MUITO ALTO",ipsm1k:"ALTO",ipsm2k:"BAIXO"},
+  {cidade:"Bom Jesus do Itabapoana",ponto:"Rua Aristides Figueiredo",raio:"1km",hab:16469,dom:6783,fluxo:40719,rendaDom:7484,classAB:28.8,alimTotal:5903504,alimFora:2191479,alimNoDom:3711994,lanches:116664,sanduiches:158658,almoco:1727337,bebidas:498641,panificados:382161,leites:492522,aves:238223,carnes:650768,frutas:185816,legumes:119549,higiene:894846,ipsm500:"MUITO ALTO",ipsm1k:"ALTO",ipsm2k:"BAIXO"},
+  {cidade:"Bom Jesus do Itabapoana",ponto:"Rua Aristides Figueiredo",raio:"2km",hab:34000,dom:14099,fluxo:47822,rendaDom:6826,classAB:25.3,alimTotal:11469680,alimFora:4123093,alimNoDom:7346536,lanches:217946,sanduiches:308167,almoco:3225235,bebidas:960973,panificados:764248,leites:957549,aves:476127,carnes:1298265,frutas:361853,legumes:231693,higiene:1783182,ipsm500:"MUITO ALTO",ipsm1k:"ALTO",ipsm2k:"BAIXO"},
+];
+
+// ─── SCATTER IPSM × FATURAMENTO ───────────────────────────────────────────────
+function renderScatter(raio) {
+  // Build points: x = IPSM (live), y = faturamento total (alimNoDom + higiene)
+  // One entry per ponto (using the raio selected in the fat tab)
+  const prevRaio = curRaio;
+  curRaio = raio;
+  const liveResults = getResults(); // 14 results with .ipsm and .cat
+  curRaio = prevRaio;
+
+  const CAT_COLOR = {
+    "MUITO ALTO": "#43939D",
+    "ALTO":       "#9F7FCC",
+    "MÉDIO":      "#E8C84A",
+    "BAIXO":      "#D4734A",
+    "MUITO BAIXO":"#A03030",
+  };
+
+  // Group by category so each gets its own dataset (for legend)
+  const catOrder = ["MUITO ALTO","ALTO","MÉDIO","BAIXO","MUITO BAIXO"];
+  const bycat = {};
+  catOrder.forEach(c => bycat[c] = []);
+
+  // Explicit map: RAW .n  →  FAT cidade · ponto  (avoids fragile word matching)
+  const RAW_TO_FAT = {
+    "BJ Aristides Figueiredo":   "Bom Jesus do Itabapoana · Rua Aristides Figueiredo",
+    "BJ R. XV de Novembro":      "Bom Jesus do Itabapoana · R. XV de Novembro",
+    "Itp. R. Dra. Darci Vargas": "Itaperuna · R. Dra. Darci Vargas (Fiteiro)",
+    "Itp. Av. Pres. Dutra":      "Itaperuna · Av. Pres. Dutra (Cidade Nova)",
+    "Itp. R. Vinhosa":           "Itaperuna · R. Vinhosa",
+    "Itaocara Rua São José":     "Itaocara · Rua São José",
+    "Miracema R. Mal. Floriano": "Miracema · R. Mal. Floriano",
+    "Itp. Rua Rafael Vasc.":     "Itaperuna · Rua Rafael Vasconcelos",
+    "Itp. Rua Júlio César":      "Itaperuna · Rua Júlio César",
+    "Pádua Av. Nilo Peçanha":    "Sto. Antônio de Pádua · Av. Nilo Peçanha",
+    "Pádua R. Cons. Paulino":    "Sto. Antônio de Pádua · R. Conselheiro Paulino",
+    "Itaocara Rua W. L. Rimes":  "Itaocara · Rua Walter Luiz Rimes",
+    "Italva R. A. Fonseca":      "Italva · Rua Antônio Ferreira da Fonseca",
+    "Italva Av. Cel. Luís Sales":"Italva · Av. Cel. Luís Sales",
+  };
+
+  liveResults.forEach(r => {
+    const fatKey = RAW_TO_FAT[r.n];
+    if(!fatKey) return;
+    const [fatCidade, fatPonto] = fatKey.split(" · ");
+    const fatRow = FAT_DATA.find(d => d.raio === raio && d.cidade === fatCidade && d.ponto === fatPonto);
+    if(!fatRow) return;
+    const secoes = [fatRow.carnes, fatRow.almoco, fatRow.leites, fatRow.bebidas,
+      fatRow.panificados, fatRow.aves, fatRow.frutas, fatRow.legumes,
+      fatRow.lanches, fatRow.sanduiches, fatRow.higiene];
+    const faturamento = secoes.reduce((s,v) => s+v, 0) / 1e6; // Potencial total em R$ Mi
+    bycat[r.cat].push({
+      x: parseFloat(r.ipsm.toFixed(4)),
+      y: parseFloat(faturamento.toFixed(3)),
+      label: r.n,
+      cidade: r.c,
+      cat: r.cat,
+    });
+  });
+
+  const datasets = catOrder
+    .filter(c => bycat[c].length > 0)
+    .map(c => ({
+      label: c,
+      data: bycat[c],
+      backgroundColor: CAT_COLOR[c],
+      borderColor: CAT_COLOR[c],
+      pointRadius: 7,
+      pointHoverRadius: 10,
+      pointStyle: "circle",
+    }));
+
+  document.getElementById("scatterRaioLabel").textContent =
+    `Raio: ${raio} · todos os 14 pontos · cor por classificação IPSM`;
+
+  const ctx = document.getElementById("scatterChart").getContext("2d");
+  if(scatterChartInst){scatterChartInst.destroy();scatterChartInst=null;}
+  scatterChartInst = new Chart(ctx, {
+    type: "scatter",
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: "rgba(145,128,168,0.85)",
+            font: { size: 10, family: "DM Mono" },
+            boxWidth: 10, padding: 14,
+            usePointStyle: true,
+          }
+        },
+        tooltip: {
+          callbacks: {
+            title: () => "",
+            label: item => {
+              const d = item.raw;
+              return [
+                ` ${d.label}`,
+                ` ${d.cidade}`,
+                ` IPSM: ${d.x.toFixed(4)}  ·  ${d.cat}`,
+                ` Potencial total: R$ ${d.y.toFixed(2)} Mi`,
+              ];
+            }
+          },
+          backgroundColor: "rgba(14,11,20,0.95)",
+          borderColor: "rgba(112,48,160,0.4)",
+          borderWidth: 1,
+          padding: 10,
+          titleFont: { family: "DM Mono" },
+          bodyFont: { family: "Outfit", size: 12 },
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "IPSM — Índice de Potencial de Mercado",
+            color: "rgba(145,128,168,0.7)",
+            font: { size: 10, family: "DM Mono" },
+          },
+          ticks: { color: "rgba(145,128,168,0.7)", font: { size: 10, family: "DM Mono" } },
+          grid: { color: "rgba(112,48,160,0.08)" },
+          border: { color: "rgba(112,48,160,0.15)" },
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Potencial total (alim. + higiene) — R$ Mi",
+            color: "rgba(145,128,168,0.7)",
+            font: { size: 10, family: "DM Mono" },
+          },
+          ticks: {
+            color: "rgba(145,128,168,0.7)",
+            font: { size: 10, family: "DM Mono" },
+            callback: v => "R$ "+v.toFixed(1)+" Mi"
+          },
+          grid: { color: "rgba(112,48,160,0.08)" },
+          border: { color: "rgba(112,48,160,0.15)" },
+        }
+      }
+    }
+  });
+}
+
+// ─── FATURAMENTO HELPERS ──────────────────────────────────────────────────────
+function fatFmt(n) {
+  const m = n/1e6;
+  return m >= 1 ? "R$ "+m.toFixed(2).replace(".",",")+" Mi" : "R$ "+Math.round(n/1000).toLocaleString("pt-BR")+" mil";
+}
+
+function fatIpsmBadge(v) {
+  const map = {"MUITO ALTO":"fat-ipsm-ma","ALTO":"fat-ipsm-a","MÉDIO":"fat-ipsm-m","BAIXO":"fat-ipsm-b","MUITO BAIXO":"fat-ipsm-mb"};
+  return `<span class="fat-ipsm-badge ${map[v]||"fat-ipsm-mb"}">${v}</span>`;
+}
+
+function buildFatPontoSelect() {
+  const pontos = [...new Set(FAT_DATA.map(d => d.cidade+" · "+d.ponto))];
+  const sel = document.getElementById("fatPonto");
+  pontos.forEach(p => {
+    const o = document.createElement("option");
+    o.value = p; o.textContent = p; sel.appendChild(o);
+  });
+  sel.value = "Itaperuna · R. Dra. Darci Vargas (Fiteiro)";
+}
+
+function renderFat() {
+  const key   = document.getElementById("fatPonto").value;
+  const raio  = document.getElementById("fatRaio").value;
+  const row   = FAT_DATA.find(d => (d.cidade+" · "+d.ponto)===key && d.raio===raio);
+  if(!row) return;
+
+  const secoes = [
+    {nome:"Carnes e pescados",          val:row.carnes},
+    {nome:"Almoço e jantar",            val:row.almoco},
+    {nome:"Leites e derivados",         val:row.leites},
+    {nome:"Bebidas e infusões",         val:row.bebidas},
+    {nome:"Panificados",                val:row.panificados},
+    {nome:"Aves e ovos",                val:row.aves},
+    {nome:"Frutas",                     val:row.frutas},
+    {nome:"Legumes e verduras",         val:row.legumes},
+    {nome:"Lanches",                    val:row.lanches},
+    {nome:"Sanduíches e salgados",      val:row.sanduiches},
+    {nome:"Higiene e cuidados pessoais",val:row.higiene},
+  ].sort((a,b) => b.val-a.val);
+
+  const maxVal = secoes[0].val;
+  const total  = secoes.reduce((s,x) => s+x.val, 0);
+
+  // Busca classificação dinâmica com os pesos atuais
+  // Troca temporariamente o raio global, calcula, restaura
+  const prevRaio = curRaio;
+  curRaio = raio;
+  const liveResults = getResults();
+  curRaio = prevRaio;
+
+  // Mapa explícito: chave FAT "cidade · ponto" → nome RAW (.n)
+  const FAT_TO_RAW = {
+    "Bom Jesus do Itabapoana · Rua Aristides Figueiredo":  "BJ Aristides Figueiredo",
+    "Bom Jesus do Itabapoana · R. XV de Novembro":         "BJ R. XV de Novembro",
+    "Itaperuna · R. Dra. Darci Vargas (Fiteiro)":          "Itp. R. Dra. Darci Vargas",
+    "Itaperuna · Av. Pres. Dutra (Cidade Nova)":           "Itp. Av. Pres. Dutra",
+    "Itaperuna · R. Vinhosa":                              "Itp. R. Vinhosa",
+    "Itaocara · Rua São José":                             "Itaocara Rua São José",
+    "Miracema · R. Mal. Floriano":                         "Miracema R. Mal. Floriano",
+    "Itaperuna · Rua Rafael Vasconcelos":                  "Itp. Rua Rafael Vasc.",
+    "Itaperuna · Rua Júlio César":                         "Itp. Rua Júlio César",
+    "Sto. Antônio de Pádua · Av. Nilo Peçanha":            "Pádua Av. Nilo Peçanha",
+    "Sto. Antônio de Pádua · R. Conselheiro Paulino":      "Pádua R. Cons. Paulino",
+    "Itaocara · Rua Walter Luiz Rimes":                    "Itaocara Rua W. L. Rimes",
+    "Italva · Rua Antônio Ferreira da Fonseca":            "Italva R. A. Fonseca",
+    "Italva · Av. Cel. Luís Sales":                        "Italva Av. Cel. Luís Sales",
+  };
+  const rawName = FAT_TO_RAW[key];
+  const liveEntry = rawName ? liveResults.find(r => r.n === rawName) : null;
+  const ipsm = liveEntry ? liveEntry.cat : "—";
+
+  // Metrics
+  document.getElementById("fatMetrics").innerHTML = `
+    <div class="fat-metric">
+      <div class="lbl">Potencial total</div>
+      <div class="val2">${fatFmt(total)}</div>
+      <div class="sub">alim. + higiene/mês</div>
+    </div>
+    <div class="fat-metric">
+      <div class="lbl">Alim. no domicílio</div>
+      <div class="val2">${fatFmt(row.alimNoDom)}</div>
+      <div class="sub">núcleo do supermercado</div>
+    </div>
+    <div class="fat-metric">
+      <div class="lbl">Alimentação total</div>
+      <div class="val2">${fatFmt(row.alimTotal)}</div>
+      <div class="sub">incl. fora do domicílio</div>
+    </div>
+    <div class="fat-metric">
+      <div class="lbl">IPSM (${raio})</div>
+      <div class="val2">${fatIpsmBadge(ipsm)}</div>
+      <div class="sub">índice de potencial</div>
+    </div>
+    <div class="fat-metric">
+      <div class="lbl">Domicílios</div>
+      <div class="val2">${row.dom.toLocaleString("pt-BR")}</div>
+      <div class="sub">renda/dom R$ ${row.rendaDom.toLocaleString("pt-BR")}</div>
+    </div>
+    <div class="fat-metric">
+      <div class="lbl">Fluxo/dia</div>
+      <div class="val2">${row.fluxo.toLocaleString("pt-BR")}</div>
+      <div class="sub">passantes no raio</div>
+    </div>`;
+
+  // Area box
+  const captureRates = {
+    "500m": {conservador: 0.18, moderado: 0.28},
+    "1km":  {conservador: 0.13, moderado: 0.18},
+    "2km":  {conservador: 0.07, moderado: 0.11},
+  };
+  const rates = captureRates[raio];
+
+  document.getElementById("fatArea").innerHTML = `
+    <div class="fat-area-card">
+      <div class="lbl">Classe A+B no raio</div>
+      <div class="val2">${row.classAB}%</div>
+    </div>
+    <div class="fat-area-card">
+      <div class="lbl">Habitantes</div>
+      <div class="val2">${row.hab.toLocaleString("pt-BR")}</div>
+    </div>
+    <div class="fat-area-card capture">
+      <div class="lbl">Captura ${Math.round(rates.conservador*100)}% — conservador</div>
+      <div class="val2">${fatFmt(total*rates.conservador)}<span style="font-size:12px;font-weight:400;color:var(--muted)">/mês</span></div>
+    </div>
+    <div class="fat-area-card capture">
+      <div class="lbl">Captura ${Math.round(rates.moderado*100)}% — moderado</div>
+      <div class="val2">${fatFmt(total*rates.moderado)}<span style="font-size:12px;font-weight:400;color:var(--muted)">/mês</span></div>
+    </div>`;
+
+  // Table header
+  document.getElementById("fatThead").innerHTML = `
+    <tr>
+      <th>Seção / Categoria</th>
+      <th style="min-width:240px">Potencial mensal</th>
+      <th style="text-align:right">% do total</th>
+    </tr>`;
+
+  // Table rows
+  const rows = secoes.map(s => {
+    const pct = Math.round(s.val/total*100);
+    const barW = Math.round(s.val/maxVal*100);
+    return `<tr>
+      <td>${s.nome}</td>
+      <td><div class="fat-bar-wrap">
+        <div class="fat-bar-bg"><div class="fat-bar-fill" style="width:${barW}%"></div></div>
+        <span class="fat-val">${fatFmt(s.val)}</span>
+      </div></td>
+      <td class="fat-pct">${pct}%</td>
+    </tr>`;
+  }).join("");
+
+  const totalRow = `<tr>
+    <td><strong>TOTAL</strong></td>
+    <td><div class="fat-bar-wrap">
+      <div class="fat-bar-bg"><div class="fat-bar-fill" style="width:100%"></div></div>
+      <span class="fat-val"><strong>${fatFmt(total)}</strong></span>
+    </div></td>
+    <td class="fat-pct"><strong>100%</strong></td>
+  </tr>`;
+
+  document.getElementById("fatTbody").innerHTML = rows + totalRow;
+
+  // Note
+  document.getElementById("fatNote").textContent =
+    "* Potencial de faturamento calculado com base no consumo alimentar e de higiene/cuidados pessoais " +
+    "dos domicílios na área de influência (POF/IBGE). Os valores representam a demanda total do mercado, " +
+    "não a captura estimada da loja. Taxas de captura aplicadas por raio: 500m conservador 18% / moderado 28% · 1km conservador 13% / moderado 18% · 2km conservador 7% / moderado 11% — baseadas no histórico de faturamento da praça e no porte do Serra Azul.";
+
+  // Scatter IPSM × Faturamento
+  renderScatter(raio);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  resetW();
+  buildSidebarSet("wContainer","r");
+  buildSidebarSet("wContainer2","c");
+  buildSidebarSet("wContainer3","d");
+  buildFilters(); buildHead(); updateTotals(); render();
+
+  // Faturamento select
+  buildFatPontoSelect();
+  renderFat();
+
+  // Raio
+  document.querySelectorAll(".raio-tab").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".raio-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); curRaio=b.dataset.r; render();
+  }));
+
+  // Reset
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    resetW(); syncAllSliders(); updateTotals(); render();
+  });
+
+  // Search
+  document.getElementById("searchInput").addEventListener("input", e => {
+    search=e.target.value; render();
+  });
+
+  // Tabs
+  document.querySelectorAll(".tab-btn").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    document.getElementById("page-"+b.dataset.tab).classList.add("active");
+    if(b.dataset.tab==="chart"){const r=getResults();renderBarChart(r);renderStackedChart(r);}
+    if(b.dataset.tab==="detail") renderDetailTable(getResults());
+    if(b.dataset.tab==="fat") renderFat();
+  }));
+});
+</script>
+</body>
+</html>
