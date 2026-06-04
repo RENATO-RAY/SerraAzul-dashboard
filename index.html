@@ -35,6 +35,11 @@ body{font-family:"Outfit",sans-serif;background:var(--bg);color:var(--text);min-
 .raio-tab.active{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
 .reset-btn{font-family:"DM Mono",monospace;font-size:11px;padding:6px 13px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--p3);cursor:pointer;transition:all 0.2s}
 .reset-btn:hover{background:rgba(67,147,157,0.12)}
+.nf-toggle{font-family:"DM Mono",monospace;font-size:11px;font-weight:500;padding:6px 12px;border-radius:6px;border:1px solid rgba(112,48,160,0.4);background:rgba(112,48,160,0.12);color:var(--p3);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+.nf-toggle.on{border-color:var(--p3);background:rgba(67,147,157,0.15);color:var(--p3)}
+.nf-toggle.off{border-color:var(--dim);background:rgba(255,255,255,0.04);color:var(--dim)}
+.nf-dot{width:7px;height:7px;border-radius:50%;background:var(--p3);transition:background 0.2s;flex-shrink:0}
+.nf-toggle.off .nf-dot{background:var(--dim)}
 
 .tab-nav{position:relative;z-index:10;display:flex;gap:0;border-bottom:1px solid var(--border);background:rgba(14,11,20,0.7);padding:0 1.5rem}
 .tab-btn{font-family:"DM Mono",monospace;font-size:11px;font-weight:500;padding:10px 18px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap}
@@ -228,6 +233,9 @@ body{font-family:"Outfit",sans-serif;background:var(--bg);color:var(--text);min-
       <button class="raio-tab" data-r="1km">1km</button>
       <button class="raio-tab" data-r="2km">2km</button>
     </div>
+    <button class="nf-toggle on" id="nfToggle" onclick="toggleNF()">
+      <span class="nf-dot"></span> Nova Friburgo
+    </button>
     <button class="reset-btn" id="resetBtn">↺ Resetar pesos</button>
   </div>
 </header>
@@ -422,6 +430,7 @@ const RAW_DATA = {
  {n:"Itaocara Rua W. L. Rimes", c:"Itaocara",       hab:4002,  dom:2005, fluxo:15935, rendaPC:2861.07, rendaDom:5710.72, rendaTotal:11.45, classeAB:0.281,adultos:0.394,auto:0.497,alimTotal:1462936,alimFora:531981, alimNodom:930948, compra:1156662,pctAlim:0.791,concDir:4, concInd:22},
  {n:"Italva R. A. Fonseca",     c:"Italva",         hab:1649,  dom:731,  fluxo:8208,  rendaPC:3238.51, rendaDom:7305.48, rendaTotal:5.34,  classeAB:0.284,adultos:0.373,auto:0.484,alimTotal:654144, alimFora:231655, alimNodom:422486, compra:525634, pctAlim:0.803,concDir:2, concInd:6},
  {n:"Italva Av. Cel. Luís Sales",c:"Italva",        hab:1548,  dom:686,  fluxo:9887,  rendaPC:3149.43, rendaDom:7106.87, rendaTotal:4.88,  classeAB:0.263,adultos:0.380,auto:0.483,alimTotal:599956, alimFora:210055, alimNodom:389899, compra:485306, pctAlim:0.809,concDir:3, concInd:7},
+ {n:"N. Friburgo Pça. Demerval",  c:"Nova Friburgo", hab:7064,  dom:4617, fluxo:72339, rendaPC:7658.40, rendaDom:11717.33,rendaTotal:54.10, classeAB:0.605,adultos:0.364,auto:0.615,alimTotal:5349374,alimFora:2374595,alimNodom:2974731,compra:3657191,pctAlim:0.684,concDir:4, concInd:40},
 ],
 "1km":[
  {n:"Itp. Rua Júlio César",     c:"Itaperuna",      hab:18111,dom:8022, fluxo:84331, rendaPC:3101.79, rendaDom:7002.82, rendaTotal:56.18, classeAB:0.301,adultos:0.405,auto:0.527,alimTotal:6465153,alimFora:2425332,alimNodom:4039786,compra:5013272,pctAlim:0.775,concDir:10,concInd:45},
@@ -438,6 +447,7 @@ const RAW_DATA = {
  {n:"Itaocara Rua São José",    c:"Itaocara",       hab:6504, dom:2891, fluxo:20711, rendaPC:3016.32, rendaDom:6785.94, rendaTotal:19.62, classeAB:0.303,adultos:0.401,auto:0.493,alimTotal:2311872,alimFora:853620, alimNodom:1458240,compra:1810588,pctAlim:0.783,concDir:5, concInd:37},
  {n:"Italva R. A. Fonseca",     c:"Italva",         hab:5613, dom:2236, fluxo:12037, rendaPC:2400.64, rendaDom:6026.30, rendaTotal:13.47, classeAB:0.198,adultos:0.393,auto:0.483,alimTotal:1720474,alimFora:570135, alimNodom:1150334,compra:1433881,pctAlim:0.833,concDir:4, concInd:14},
  {n:"Italva Av. Cel. Luís Sales",c:"Italva",        hab:5582, dom:2422, fluxo:13334, rendaPC:2672.88, rendaDom:6160.21, rendaTotal:14.92, classeAB:0.218,adultos:0.393,auto:0.479,alimTotal:1887482,alimFora:635891, alimNodom:1251585,compra:1559751,pctAlim:0.826,concDir:5, concInd:16},
+ {n:"N. Friburgo Pça. Demerval",  c:"Nova Friburgo", hab:18103,dom:10835,fluxo:111221,rendaPC:6090.17, rendaDom:10175.38,rendaTotal:110.25,classeAB:0.510,adultos:0.400,auto:0.612,alimTotal:11385189,alimFora:4839624,alimNodom:6545475,compra:8070164,pctAlim:0.709,concDir:11,concInd:67},
 ],
 "2km":[
  {n:"Itp. R. Dra. Darci Vargas",c:"Itaperuna",      hab:53945,dom:22899,fluxo:108215,rendaPC:3000.30, rendaDom:7068.06, rendaTotal:161.85,classeAB:0.295,adultos:0.415,auto:0.525,alimTotal:18715497,alimFora:7000727,alimNodom:11714672,compra:14536292,pctAlim:0.777,concDir:25,concInd:91},
@@ -454,6 +464,7 @@ const RAW_DATA = {
  {n:"Itaocara Rua W. L. Rimes", c:"Itaocara",       hab:13327,dom:5478, fluxo:22914, rendaPC:2538.93, rendaDom:6176.77, rendaTotal:33.84, classeAB:0.253,adultos:0.414,auto:0.495,alimTotal:4116072, alimFora:1457671,alimNodom:2658384, compra:3305321, pctAlim:0.803,concDir:5, concInd:41},
  {n:"Italva R. A. Fonseca",     c:"Italva",         hab:10955,dom:4400, fluxo:14314, rendaPC:2332.88, rendaDom:5808.35, rendaTotal:25.56, classeAB:0.189,adultos:0.402,auto:0.484,alimTotal:3283776, alimFora:1079070,alimNodom:2204696, compra:2748722, pctAlim:0.837,concDir:5, concInd:21},
  {n:"Italva Av. Cel. Luís Sales",c:"Italva",        hab:10302,dom:4144, fluxo:14261, rendaPC:2362.47, rendaDom:5873.10, rendaTotal:24.34, classeAB:0.195,adultos:0.403,auto:0.484,alimTotal:3118429, alimFora:1029965,alimNodom:2088454, compra:2603418, pctAlim:0.834,concDir:5, concInd:21},
+ {n:"N. Friburgo Pça. Demerval",  c:"Nova Friburgo", hab:41105,dom:23122,fluxo:145417,rendaPC:4887.08, rendaDom:8687.97, rendaTotal:200.88,classeAB:0.426,adultos:0.409,auto:0.616,alimTotal:21651707,alimFora:8795494,alimNodom:12856063,compra:15892394,pctAlim:0.734,concDir:14,concInd:121},
 ]
 };
 
@@ -470,6 +481,18 @@ const IND_INV = {concDir:true, concInd:true};
 // ─── ESTADO ──────────────────────────────────────────────────────────────────
 let W = {}, curRaio = "500m", filterCat = "ALL", sortK = "ipsm", sortD = "desc", search = "";
 let barChartInst = null, radarChartInst = null, scatterChartInst = null;
+let includeNF = true;
+
+function toggleNF() {
+  includeNF = !includeNF;
+  const btn = document.getElementById("nfToggle");
+  btn.className = "nf-toggle " + (includeNF ? "on" : "off");
+  btn.querySelector(".nf-dot").style.background = includeNF ? "var(--p3)" : "var(--dim)";
+  // Rebuild fat ponto select — add/remove NF option
+  buildFatPontoSelect();
+  render();
+  renderFat();
+}
 
 // ─── NORMALIZAÇÃO ─────────────────────────────────────────────────────────────
 function computeNorms(arr) {
@@ -512,7 +535,8 @@ function classify(sc, all) {
 }
 
 function getResults() {
-  const arr = RAW_DATA[curRaio];
+  let arr = RAW_DATA[curRaio];
+  if(!includeNF) arr = arr.filter(d => d.c !== "Nova Friburgo");
   const norms = computeNorms(arr);
   const scored = arr.map((d,i) => ({...d, nm:norms[i], ipsm:computeIPSM(norms[i])}));
   const all = scored.map(r => r.ipsm);
@@ -886,6 +910,10 @@ const FAT_DATA = [
   {cidade:"Bom Jesus do Itabapoana",ponto:"Rua Aristides Figueiredo",raio:"500m",hab:4780,dom:2029,fluxo:32957,rendaDom:10416,classAB:40.6,alimTotal:2297261,alimFora:925620,alimNoDom:1371625,lanches:49697,sanduiches:61339,almoco:744162,bebidas:197256,panificados:136839,leites:190815,aves:85730,carnes:235943,frutas:71382,legumes:46822,higiene:324389,ipsm500:"MUITO ALTO",ipsm1k:"ALTO",ipsm2k:"BAIXO"},
   {cidade:"Bom Jesus do Itabapoana",ponto:"Rua Aristides Figueiredo",raio:"1km",hab:16469,dom:6783,fluxo:40719,rendaDom:7484,classAB:28.8,alimTotal:5903504,alimFora:2191479,alimNoDom:3711994,lanches:116664,sanduiches:158658,almoco:1727337,bebidas:498641,panificados:382161,leites:492522,aves:238223,carnes:650768,frutas:185816,legumes:119549,higiene:894846,ipsm500:"MUITO ALTO",ipsm1k:"ALTO",ipsm2k:"BAIXO"},
   {cidade:"Bom Jesus do Itabapoana",ponto:"Rua Aristides Figueiredo",raio:"2km",hab:34000,dom:14099,fluxo:47822,rendaDom:6826,classAB:25.3,alimTotal:11469680,alimFora:4123093,alimNoDom:7346536,lanches:217946,sanduiches:308167,almoco:3225235,bebidas:960973,panificados:764248,leites:957549,aves:476127,carnes:1298265,frutas:361853,legumes:231693,higiene:1783182,ipsm500:"MUITO ALTO",ipsm1k:"ALTO",ipsm2k:"BAIXO"},
+  // Nova Friburgo — valores calculados a partir dos dados POF/IBGE
+  {cidade:"Nova Friburgo",ponto:"Pça. Demerval Moreira",raio:"500m",hab:7064,dom:4617,fluxo:72339,rendaDom:11717,classAB:60.5,alimTotal:5349374,alimFora:2374595,alimNoDom:2974731,lanches:126354,sanduiches:139316,almoco:1959339,bebidas:462153,panificados:282532,leites:439257,aves:180205,carnes:501884,frutas:161209,legumes:110837,higiene:682460,ipsm500:"MUITO ALTO",ipsm1k:"MUITO ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Nova Friburgo",ponto:"Pça. Demerval Moreira",raio:"1km",hab:18103,dom:10835,fluxo:111221,rendaDom:10175,classAB:51.0,alimTotal:11385189,alimFora:4839624,alimNoDom:6545475,lanches:258689,sanduiches:300081,almoco:3947248,bebidas:981634,panificados:636591,leites:939936,aves:402303,carnes:1114715,frutas:348084,legumes:233815,higiene:1524689,ipsm500:"MUITO ALTO",ipsm1k:"MUITO ALTO",ipsm2k:"MUITO ALTO"},
+  {cidade:"Nova Friburgo",ponto:"Pça. Demerval Moreira",raio:"2km",hab:41105,dom:23122,fluxo:145417,rendaDom:8688,classAB:42.6,alimTotal:21651707,alimFora:8795494,alimNoDom:12856063,lanches:470751,sanduiches:575738,almoco:7089253,bebidas:1858049,panificados:1277543,leites:1795279,aves:801991,carnes:2211967,frutas:669745,legumes:441305,higiene:3036331,ipsm500:"MUITO ALTO",ipsm1k:"MUITO ALTO",ipsm2k:"MUITO ALTO"},
 ];
 
 // ─── SCATTER IPSM × FATURAMENTO ───────────────────────────────────────────────
@@ -926,6 +954,7 @@ function renderScatter(raio) {
     "Itaocara Rua W. L. Rimes":  "Itaocara · Rua Walter Luiz Rimes",
     "Italva R. A. Fonseca":      "Italva · Rua Antônio Ferreira da Fonseca",
     "Italva Av. Cel. Luís Sales":"Italva · Av. Cel. Luís Sales",
+    "N. Friburgo Pça. Demerval": "Nova Friburgo · Pça. Demerval Moreira",
   };
 
   liveResults.forEach(r => {
@@ -1046,19 +1075,25 @@ function fatIpsmBadge(v) {
 }
 
 function buildFatPontoSelect() {
-  const pontos = [...new Set(FAT_DATA.map(d => d.cidade+" · "+d.ponto))];
+  const src = includeNF ? FAT_DATA : FAT_DATA.filter(d => d.cidade !== "Nova Friburgo");
+  const pontos = [...new Set(src.map(d => d.cidade+" · "+d.ponto))];
   const sel = document.getElementById("fatPonto");
+  const prev = sel.value;
+  sel.innerHTML = "";
   pontos.forEach(p => {
     const o = document.createElement("option");
     o.value = p; o.textContent = p; sel.appendChild(o);
   });
-  sel.value = "Itaperuna · R. Dra. Darci Vargas (Fiteiro)";
+  // Restore previous selection if still available, else default
+  if(pontos.includes(prev)) sel.value = prev;
+  else sel.value = "Itaperuna · R. Dra. Darci Vargas (Fiteiro)";
 }
 
 function renderFat() {
   const key   = document.getElementById("fatPonto").value;
   const raio  = document.getElementById("fatRaio").value;
-  const row   = FAT_DATA.find(d => (d.cidade+" · "+d.ponto)===key && d.raio===raio);
+  const src   = includeNF ? FAT_DATA : FAT_DATA.filter(d => d.cidade !== "Nova Friburgo");
+  const row   = src.find(d => (d.cidade+" · "+d.ponto)===key && d.raio===raio);
   if(!row) return;
 
   const secoes = [
@@ -1101,6 +1136,7 @@ function renderFat() {
     "Itaocara · Rua Walter Luiz Rimes":                    "Itaocara Rua W. L. Rimes",
     "Italva · Rua Antônio Ferreira da Fonseca":            "Italva R. A. Fonseca",
     "Italva · Av. Cel. Luís Sales":                        "Italva Av. Cel. Luís Sales",
+    "Nova Friburgo · Pça. Demerval Moreira":               "N. Friburgo Pça. Demerval",
   };
   const rawName = FAT_TO_RAW[key];
   const liveEntry = rawName ? liveResults.find(r => r.n === rawName) : null;
