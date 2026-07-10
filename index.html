@@ -128,6 +128,11 @@ body{font-family:"Outfit",sans-serif;background:var(--bg);color:var(--text);min-
 .bar-w{width:72px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden}
 .bar-f{height:100%;border-radius:2px;transition:width 0.4s ease}
 .si{opacity:0.35;margin-left:3px;font-size:10px}.si.act{opacity:1;color:var(--p3)}
+#datasetTabs{border-color:rgba(67,147,157,0.3)}
+#datasetTabs .raio-tab.active{background:linear-gradient(135deg,var(--p3),var(--p4))}
+.tipo-badge{display:inline-block;font-size:8.5px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border-radius:4px;text-transform:uppercase;font-family:"DM Mono",monospace;margin-top:2px}
+.tipo-ex{background:rgba(67,147,157,.15);color:var(--p3);border:1px solid rgba(67,147,157,.35)}
+.tipo-ca{background:rgba(159,127,204,.15);color:var(--cat-a);border:1px solid rgba(159,127,204,.35)}
 
 /* CHART PAGE */
 .chart-page{position:relative;z-index:10;width:100%;display:grid;grid-template-columns:300px 1fr;height:calc(100vh - 130px)}
@@ -224,10 +229,15 @@ body{font-family:"Outfit",sans-serif;background:var(--bg);color:var(--text);min-
     <div>
       <div class="brand-label">RAY Consulting · Serra Azul Supermercados · 2026</div>
       <div class="brand-title">IPSM Dashboard</div>
-      <div class="brand-sub">Índice de Potencial de Mercado por Supermercado · 14 pontos · 6 municípios</div>
+      <div class="brand-sub" id="brandSub">Índice de Potencial de Mercado por Supermercado · 8 pontos · 4 municípios</div>
     </div>
   </div>
   <div class="controls">
+    <div class="raio-tabs" id="datasetTabs">
+      <button class="raio-tab active" data-ds="existentes">Existentes</button>
+      <button class="raio-tab" data-ds="candidatos">Candidatos</button>
+      <button class="raio-tab" data-ds="unificado">Unificado</button>
+    </div>
     <div class="raio-tabs">
       <button class="raio-tab active" data-r="500m">500m</button>
       <button class="raio-tab" data-r="1km">1km</button>
@@ -414,7 +424,7 @@ const INDICATORS = [
 // Campos por ponto: {n, c, hab, dom, fluxo, rendaPC, rendaDom, rendaTotal,
 //                    classeAB, adultos, auto, alimTotal, alimFora, alimNodom,
 //                    compra, pctAlim, concDir, concInd}
-const RAW_DATA = {
+const RAW_DATA_CANDIDATOS = {
 "500m":[
  {n:"BJ Aristides Figueiredo",  c:"Bom Jesus",      hab:4780,  dom:2029, fluxo:32957, rendaPC:4421.54, rendaDom:10416.43,rendaTotal:21.13, classeAB:0.406,adultos:0.379,auto:0.542,alimTotal:2297261,alimFora:925620, alimNodom:1371625,compra:1696014,pctAlim:0.738,concDir:3, concInd:10},
  {n:"BJ R. XV de Novembro",     c:"Bom Jesus",      hab:3460,  dom:1574, fluxo:33188, rendaPC:5588.50, rendaDom:12284.77,rendaTotal:19.34, classeAB:0.495,adultos:0.385,auto:0.544,alimTotal:2030851,alimFora:852230, alimNodom:1178605,compra:1454278,pctAlim:0.716,concDir:4, concInd:15},
@@ -467,6 +477,85 @@ const RAW_DATA = {
  {n:"N. Friburgo Pça. Demerval",  c:"Nova Friburgo", hab:41105,dom:23122,fluxo:145417,rendaPC:4887.08, rendaDom:8687.97, rendaTotal:200.88,classeAB:0.426,adultos:0.409,auto:0.616,alimTotal:21651707,alimFora:8795494,alimNodom:12856063,compra:15892394,pctAlim:0.734,concDir:14,concInd:121},
 ]
 };
+const RAW_DATA_EXISTENTES = {
+"500m":[
+ {n:"NF São Geraldo",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"R. Benedito Feliciano, 1374 - São Geraldo",hab:1565,dom:676,fluxo:2056,rendaPC:1880.17,rendaDom:4352.77,rendaTotal:2.94,classeAB:0.1300,adultos:0.3990,auto:0.6260,alimTotal:392765,alimFora:122517,alimNodom:270247,compra:337665,pctAlim:0.8597,concDir:0,concInd:5},
+ {n:"NF Maria Teresa",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"Estr. Antônio Acácio Cardinot, 93 - Parque Maria Teresa",hab:662,dom:305,fluxo:988,rendaPC:2665.98,rendaDom:5786.49,rendaTotal:1.76,classeAB:0.2320,adultos:0.4000,auto:0.5570,alimTotal:226489,alimFora:75862,alimNodom:150627,compra:187814,pctAlim:0.8292,concDir:0,concInd:2},
+ {n:"NF Olaria",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"R. Pres. Getulio Vargas, 94 - Olaria",hab:11176,dom:5885,fluxo:44649,rendaPC:2919.08,rendaDom:5543.52,rendaTotal:32.62,classeAB:0.2510,adultos:0.4200,auto:0.5620,alimTotal:4031625,alimFora:1405744,alimNodom:2625866,compra:3269103,pctAlim:0.8109,concDir:5,concInd:33},
+ {n:"NF Mury",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"Av. Manoel Carneiro de Menezes, 3969 - Mury",hab:251,dom:112,fluxo:321,rendaPC:4114.98,rendaDom:9221.97,rendaTotal:1.03,classeAB:0.3210,adultos:0.3820,auto:0.6250,alimTotal:109393,alimFora:44033,alimNodom:65359,compra:80826,pctAlim:0.7389,concDir:2,concInd:2},
+ {n:"NF Centro",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"Av. Euterpe Friburguense, 16/20 - Centro",hab:3721,dom:2380,fluxo:19804,rendaPC:7016.91,rendaDom:10970.56,rendaTotal:26.11,classeAB:0.5990,adultos:0.3790,auto:0.6090,alimTotal:2614482,alimFora:1152123,alimNodom:1462336,compra:1798736,pctAlim:0.6880,concDir:2,concInd:18},
+ {n:"Teresópolis Delfim Moreira",c:"Teresópolis",tipo:"EXISTENTE",fullPonto:"Av. Delfim Moreira, 1200 - Várzea",hab:2976,dom:1809,fluxo:24012,rendaPC:7188.79,rendaDom:11826.33,rendaTotal:21.39,classeAB:0.5410,adultos:0.3890,auto:0.5840,alimTotal:2155776,alimFora:937694,alimNodom:1218064,compra:1499564,pctAlim:0.6956,concDir:6,concInd:18},
+ {n:"Cordeiro Raul Veiga",c:"Cordeiro",tipo:"EXISTENTE",fullPonto:"Rua Weverton Vieira Soares, 361 - Parque Raul Veiga",hab:1873,dom:865,fluxo:3151,rendaPC:3055.98,rendaDom:6617.17,rendaTotal:5.72,classeAB:0.2900,adultos:0.4260,auto:0.5790,alimTotal:694092,alimFora:249242,alimNodom:444848,compra:553126,pctAlim:0.7969,concDir:1,concInd:4},
+ {n:"Bom Jardim Centro",c:"Bom Jardim",tipo:"EXISTENTE",fullPonto:"R. Nilo Peçanha, 76 - Centro",hab:1922,dom:1002,fluxo:22861,rendaPC:4903.40,rendaDom:9405.53,rendaTotal:9.42,classeAB:0.4780,adultos:0.4200,auto:0.5920,alimTotal:1022753,alimFora:418708,alimNodom:604038,compra:746449,pctAlim:0.7298,concDir:2,concInd:12},
+],
+"1km":[
+ {n:"NF São Geraldo",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"R. Benedito Feliciano, 1374 - São Geraldo",hab:5827,dom:2726,fluxo:9115,rendaPC:1989.65,rendaDom:4253.00,rendaTotal:11.59,classeAB:0.1330,adultos:0.4270,auto:0.6110,alimTotal:1546455,alimFora:480577,alimNodom:1065875,compra:1331720,pctAlim:0.8611,concDir:0,concInd:11},
+ {n:"NF Maria Teresa",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"Estr. Antônio Acácio Cardinot, 93 - Parque Maria Teresa",hab:8806,dom:4207,fluxo:10463,rendaPC:2049.12,rendaDom:4289.16,rendaTotal:18.04,classeAB:0.1400,adultos:0.4230,auto:0.5460,alimTotal:2383134,alimFora:745116,alimNodom:1638014,compra:2046054,pctAlim:0.8586,concDir:0,concInd:4},
+ {n:"NF Olaria",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"R. Pres. Getulio Vargas, 94 - Olaria",hab:21072,dom:11023,fluxo:63227,rendaPC:2693.78,rendaDom:5149.53,rendaTotal:56.76,classeAB:0.2140,adultos:0.4190,auto:0.5570,alimTotal:7141006,alimFora:2422970,alimNodom:4718013,compra:5879721,pctAlim:0.8234,concDir:6,concInd:46},
+ {n:"NF Mury",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"Av. Manoel Carneiro de Menezes, 3969 - Mury",hab:900,dom:483,fluxo:6296,rendaPC:3406.77,rendaDom:6348.03,rendaTotal:3.07,classeAB:0.2820,adultos:0.4470,auto:0.7120,alimTotal:317877,alimFora:128879,alimNodom:188996,compra:233633,pctAlim:0.7350,concDir:2,concInd:2},
+ {n:"NF Centro",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"Av. Euterpe Friburguense, 16/20 - Centro",hab:14037,dom:8654,fluxo:94845,rendaPC:6603.60,rendaDom:10711.20,rendaTotal:92.69,classeAB:0.5540,adultos:0.3880,auto:0.6200,alimTotal:9396403,alimFora:4076864,alimNodom:5319461,compra:6549919,pctAlim:0.6971,concDir:6,concInd:66},
+ {n:"Teresópolis Delfim Moreira",c:"Teresópolis",tipo:"EXISTENTE",fullPonto:"Av. Delfim Moreira, 1200 - Várzea",hab:14577,dom:8313,fluxo:82648,rendaPC:4519.76,rendaDom:7925.47,rendaTotal:65.88,classeAB:0.4070,adultos:0.4130,auto:0.5870,alimTotal:7156993,alimFora:2885205,alimNodom:4271739,compra:5282030,pctAlim:0.7380,concDir:9,concInd:55},
+ {n:"Cordeiro Raul Veiga",c:"Cordeiro",tipo:"EXISTENTE",fullPonto:"Rua Weverton Vieira Soares, 361 - Parque Raul Veiga",hab:5199,dom:2577,fluxo:18572,rendaPC:3407.00,rendaDom:6873.50,rendaTotal:17.71,classeAB:0.3410,adultos:0.4110,auto:0.5690,alimTotal:2075110,alimFora:780473,alimNodom:1294625,compra:1606513,pctAlim:0.7742,concDir:2,concInd:18},
+ {n:"Bom Jardim Centro",c:"Bom Jardim",tipo:"EXISTENTE",fullPonto:"R. Nilo Peçanha, 76 - Centro",hab:5799,dom:2777,fluxo:25177,rendaPC:3714.68,rendaDom:7757.08,rendaTotal:21.54,classeAB:0.3770,adultos:0.4350,auto:0.5960,alimTotal:2481150,alimFora:952451,alimNodom:1528684,compra:1895410,pctAlim:0.7639,concDir:2,concInd:18},
+],
+"2km":[
+ {n:"NF São Geraldo",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"R. Benedito Feliciano, 1374 - São Geraldo",hab:28742,dom:14133,fluxo:50359,rendaPC:2330.69,rendaDom:4739.88,rendaTotal:66.99,classeAB:0.1630,adultos:0.4460,auto:0.6030,alimTotal:8702283,alimFora:2808927,alimNodom:5893335,compra:7357119,pctAlim:0.8454,concDir:3,concInd:68},
+ {n:"NF Maria Teresa",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"Estr. Antônio Acácio Cardinot, 93 - Parque Maria Teresa",hab:21106,dom:10252,fluxo:47958,rendaPC:2051.13,rendaDom:4222.71,rendaTotal:43.29,classeAB:0.1440,adultos:0.4260,auto:0.5480,alimTotal:5697284,alimFora:1798703,alimNodom:3898569,compra:4868432,pctAlim:0.8545,concDir:4,concInd:38},
+ {n:"NF Olaria",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"R. Pres. Getulio Vargas, 94 - Olaria",hab:37820,dom:19836,fluxo:106493,rendaPC:3327.24,rendaDom:6343.82,rendaTotal:125.84,classeAB:0.2820,adultos:0.4200,auto:0.5850,alimTotal:14948221,alimFora:5447073,alimNodom:9501078,compra:11807367,pctAlim:0.7899,concDir:11,concInd:93},
+ {n:"NF Mury",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"Av. Manoel Carneiro de Menezes, 3969 - Mury",hab:3447,dom:2168,fluxo:16215,rendaPC:4964.00,rendaDom:7892.48,rendaTotal:17.11,classeAB:0.3750,adultos:0.4300,auto:0.6580,alimTotal:1762884,alimFora:730589,alimNodom:1032283,compra:1274524,pctAlim:0.7230,concDir:2,concInd:6},
+ {n:"NF Centro",c:"Nova Friburgo",tipo:"EXISTENTE",fullPonto:"Av. Euterpe Friburguense, 16/20 - Centro",hab:33645,dom:19123,fluxo:148532,rendaPC:5115.19,rendaDom:8999.67,rendaTotal:172.10,classeAB:0.4470,adultos:0.4080,auto:0.6170,alimTotal:18309800,alimFora:7542103,alimNodom:10767565,compra:13300258,pctAlim:0.7264,concDir:12,concInd:110},
+ {n:"Teresópolis Delfim Moreira",c:"Teresópolis",tipo:"EXISTENTE",fullPonto:"Av. Delfim Moreira, 1200 - Várzea",hab:45253,dom:24764,fluxo:135398,rendaPC:4041.85,rendaDom:7385.96,rendaTotal:182.91,classeAB:0.3500,adultos:0.4110,auto:0.5760,alimTotal:20076340,alimFora:7907964,alimNodom:12168249,compra:15062202,pctAlim:0.7502,concDir:21,concInd:150},
+ {n:"Cordeiro Raul Veiga",c:"Cordeiro",tipo:"EXISTENTE",fullPonto:"Rua Weverton Vieira Soares, 361 - Parque Raul Veiga",hab:15438,dom:7452,fluxo:21311,rendaPC:2929.44,rendaDom:6068.81,rendaTotal:45.22,classeAB:0.2840,adultos:0.4110,auto:0.5730,alimTotal:5412428,alimFora:1966340,alimNodom:3446063,compra:4282144,pctAlim:0.7912,concDir:3,concInd:31},
+ {n:"Bom Jardim Centro",c:"Bom Jardim",tipo:"EXISTENTE",fullPonto:"R. Nilo Peçanha, 76 - Centro",hab:13647,dom:6381,fluxo:27888,rendaPC:2844.34,rendaDom:6083.16,rendaTotal:38.82,classeAB:0.2670,adultos:0.4270,auto:0.5980,alimTotal:4654620,alimFora:1677754,alimNodom:2976845,compra:3700326,pctAlim:0.7950,concDir:3,concInd:32},
+],
+};
+
+
+// Assinala tipo=CANDIDATO e a chave de cruzamento com FAT_DATA para os 15 candidatos
+const CANDIDATO_FATKEY_MAP = {
+  "BJ Aristides Figueiredo":   "Bom Jesus do Itabapoana · Rua Aristides Figueiredo",
+  "BJ R. XV de Novembro":      "Bom Jesus do Itabapoana · R. XV de Novembro",
+  "Itp. R. Dra. Darci Vargas": "Itaperuna · R. Dra. Darci Vargas (Fiteiro)",
+  "Itp. Av. Pres. Dutra":      "Itaperuna · Av. Pres. Dutra (Cidade Nova)",
+  "Itp. R. Vinhosa":           "Itaperuna · R. Vinhosa",
+  "Itaocara Rua São José":     "Itaocara · Rua São José",
+  "Miracema R. Mal. Floriano": "Miracema · R. Mal. Floriano",
+  "Itp. Rua Rafael Vasc.":     "Itaperuna · Rua Rafael Vasconcelos",
+  "Itp. Rua Júlio César":      "Itaperuna · Rua Júlio César",
+  "Pádua Av. Nilo Peçanha":    "Sto. Antônio de Pádua · Av. Nilo Peçanha",
+  "Pádua R. Cons. Paulino":    "Sto. Antônio de Pádua · R. Conselheiro Paulino",
+  "Itaocara Rua W. L. Rimes":  "Itaocara · Rua Walter Luiz Rimes",
+  "Italva R. A. Fonseca":      "Italva · Rua Antônio Ferreira da Fonseca",
+  "Italva Av. Cel. Luís Sales":"Italva · Av. Cel. Luís Sales",
+  "N. Friburgo Pça. Demerval": "Nova Friburgo · Pça. Demerval Moreira",
+};
+Object.values(RAW_DATA_CANDIDATOS).forEach(arr => arr.forEach(p => {
+  p.tipo = "CANDIDATO";
+  p.fatKey = CANDIDATO_FATKEY_MAP[p.n] || null;
+}));
+Object.values(RAW_DATA_EXISTENTES).forEach(arr => arr.forEach(p => {
+  p.fatKey = p.c + " · " + p.fullPonto;
+}));
+
+// ─── SELETOR DE DATASET (Existentes / Candidatos / Unificado) ───────────────
+function getRawSource(raio) {
+  if (curDataset === "existentes") return RAW_DATA_EXISTENTES[raio];
+  if (curDataset === "candidatos") return RAW_DATA_CANDIDATOS[raio];
+  return RAW_DATA_EXISTENTES[raio].concat(RAW_DATA_CANDIDATOS[raio]);
+}
+function getFatSource() {
+  if (curDataset === "existentes") return FAT_DATA_EXISTENTES;
+  if (curDataset === "candidatos") return FAT_DATA_CANDIDATOS;
+  return FAT_DATA_EXISTENTES.concat(FAT_DATA_CANDIDATOS);
+}
+function updateBrandSub() {
+  const arr = getRawSource(curRaio);
+  const cidades = new Set(arr.map(d => d.c)).size;
+  const dsLabel = curDataset === "existentes" ? "pontos existentes" :
+                  curDataset === "candidatos" ? "pontos candidatos" : "pontos (existentes + candidatos)";
+  document.getElementById("brandSub").textContent =
+    `Índice de Potencial de Mercado por Supermercado · ${arr.length} ${dsLabel} · ${cidades} municípios`;
+}
 
 // ─── MAPEAMENTO INDICADOR → CAMPO ────────────────────────────────────────────
 const IND_FIELD = {
@@ -479,7 +568,7 @@ const IND_FIELD = {
 const IND_INV = {concDir:true, concInd:true};
 
 // ─── ESTADO ──────────────────────────────────────────────────────────────────
-let W = {}, curRaio = "500m", filterCat = "ALL", sortK = "ipsm", sortD = "desc", search = "";
+let W = {}, curRaio = "500m", curDataset = "existentes", filterCat = "ALL", sortK = "ipsm", sortD = "desc", search = "";
 let barChartInst = null, radarChartInst = null, scatterChartInst = null;
 let includeNF = true;
 
@@ -534,8 +623,9 @@ function classify(sc, all) {
   return "MUITO BAIXO";
 }
 
-function getResults() {
-  let arr = RAW_DATA[curRaio];
+function getResults(raioOverride) {
+  const raio = raioOverride || curRaio;
+  let arr = getRawSource(raio);
   if(!includeNF) arr = arr.filter(d => d.c !== "Nova Friburgo");
   const norms = computeNorms(arr);
   const scored = arr.map((d,i) => ({...d, nm:norms[i], ipsm:computeIPSM(norms[i])}));
@@ -546,6 +636,12 @@ function getResults() {
 }
 
 // ─── HELPERS VISUAIS ──────────────────────────────────────────────────────────
+function displayName(r){
+  if(curDataset==="unificado" && r.tipo){
+    return r.n + (r.tipo==="EXISTENTE" ? " (Existente)" : " (Candidato)");
+  }
+  return r.n;
+}
 function catCls(c){return c==="MUITO ALTO"?"bma":c==="ALTO"?"ba":c==="MÉDIO"?"bm":c==="BAIXO"?"bb":"bmb";}
 function catLabel(c){return c==="MUITO ALTO"?"Muito Alto":c==="ALTO"?"Alto":c==="MÉDIO"?"Médio":c==="BAIXO"?"Baixo":"Muito Baixo";}
 function barColor(c){return c==="MUITO ALTO"?"#43939D":c==="ALTO"?"#9F7FCC":c==="MÉDIO"?"#E8C84A":c==="BAIXO"?"#D4734A":"#A03030";}
@@ -638,7 +734,7 @@ function renderTop5(results) {
     <div class="t5-card ${rc[i]}">
       <div class="t5-rank">#${i+1}</div>
       <div class="t5-cidade">${r.c}</div>
-      <div class="t5-name">${r.n.replace(r.c+" ","").replace(/^(BJ|Itp\.|Pádua|Itaocara|Miracema|Italva)\s*/,"")}</div>
+      <div class="t5-name">${displayName(r).replace(r.c+" ","").replace(/^(BJ|Itp\.|Pádua|Itaocara|Miracema|Italva)\s*/,"")}</div>
       <div class="t5-score">${r.ipsm.toFixed(4)}</div>
       <span class="badge ${catCls(r.cat)}">${catLabel(r.cat)}</span>
     </div>`).join("");
@@ -693,7 +789,7 @@ function renderTable(results) {
     <tr>
       <td class="rk">${r.rank}°</td>
       <td>
-        <div class="bn">${r.n}</div>
+        <div class="bn">${displayName(r)}</div>
         <div class="cidade-cell">${r.c}</div>
       </td>
       <td class="sc" style="color:${barColor(r.cat)}">${r.ipsm.toFixed(4)}</td>
@@ -703,9 +799,11 @@ function renderTable(results) {
 }
 
 // ─── GRÁFICO BARRAS ────────────────────────────────────────────────────────────
+function chartsAvailable(){ return typeof Chart !== "undefined"; }
 function renderBarChart(results) {
+  if(!chartsAvailable()) return;
   const sorted = [...results].sort((a,b)=>a.ipsm-b.ipsm);
-  const labels = sorted.map(r=>r.n);
+  const labels = sorted.map(r=>displayName(r));
   const data = sorted.map(r=>parseFloat(r.ipsm.toFixed(4)));
   const colors = sorted.map(r=>barColor(r.cat));
 
@@ -720,7 +818,7 @@ function renderBarChart(results) {
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{
-          title:items=>sorted[items[0].dataIndex].n,
+          title:items=>displayName(sorted[items[0].dataIndex]),
           afterTitle:items=>"  "+sorted[items[0].dataIndex].c,
           label:c=>" IPSM: "+c.raw.toFixed(4),
           afterLabel:c=>" "+catLabel(sorted[c.dataIndex].cat)
@@ -738,6 +836,7 @@ function renderBarChart(results) {
 
 // ─── RADAR MÉDIAS ─────────────────────────────────────────────────────────────
 function renderStackedChart(results) {
+  if(!chartsAvailable()) return;
   // For each point, compute the weighted contribution of each group
   // contribution = sum of (norm * weight/100) for all indicators in the group
   const grpNames = [...new Set(INDICATORS.map(i => i.grp))];
@@ -751,7 +850,10 @@ function renderStackedChart(results) {
 
   // Sort results by IPSM descending (already sorted but just in case)
   const sorted = [...results].sort((a,b) => b.ipsm - a.ipsm);
-  const labels = sorted.map(r => r.n.length > 20 ? r.n.substring(0,19)+"…" : r.n);
+  const labels = sorted.map(r => {
+    const nm = displayName(r);
+    return nm.length > 26 ? nm.substring(0,25)+"…" : nm;
+  });
 
   const datasets = grpNames.map(grp => {
     const inds = INDICATORS.filter(i => i.grp === grp);
@@ -788,7 +890,7 @@ function renderStackedChart(results) {
         },
         tooltip: {
           callbacks: {
-            title: items => sorted[items[0].dataIndex].n,
+            title: items => displayName(sorted[items[0].dataIndex]),
             label: c => ` ${c.dataset.label}: ${c.raw.toFixed(4)}`,
             footer: items => {
               const total = items.reduce((s,i) => s + i.raw, 0);
@@ -840,7 +942,7 @@ function renderDetailTable(results) {
 
   const catColorMap={"MUITO ALTO":"cat-ma","ALTO":"cat-a","MÉDIO":"cat-m","BAIXO":"cat-b","MUITO BAIXO":"cat-mb"};
   body.innerHTML = results.map(r => {
-    let tds = `<td class="sticky-col"><div style="font-weight:600">${r.n}</div><div style="font-size:10px;color:var(--muted)">${r.c}</div></td>`;
+    let tds = `<td class="sticky-col"><div style="font-weight:600">${displayName(r)}</div><div style="font-size:10px;color:var(--muted)">${r.c}</div></td>`;
     tds += `<td class="ind-num" style="color:var(--dim)">${r.rank}°</td>`;
     tds += `<td class="ind-num" style="color:${barColor(r.cat)};font-weight:700">${r.ipsm.toFixed(4)}</td>`;
     tds += `<td><span class="badge ${catCls(r.cat)}">${catLabel(r.cat)}</span></td>`;
@@ -857,6 +959,7 @@ function renderDetailTable(results) {
 
 // ─── RENDER PRINCIPAL ─────────────────────────────────────────────────────────
 function render() {
+  updateBrandSub();
   const results = getResults();
   renderTop5(results);
   renderTable(results);
@@ -867,7 +970,7 @@ function render() {
 }
 
 // ─── FATURAMENTO DATA ─────────────────────────────────────────────────────────
-const FAT_DATA = [
+const FAT_DATA_CANDIDATOS = [
   {cidade:"Itaocara",ponto:"Rua São José",raio:"500m",hab:4864,dom:2178,fluxo:19279,rendaDom:7436,classAB:34.8,alimTotal:1864888,alimFora:710257,alimNoDom:1154620,lanches:38505,sanduiches:50631,almoco:560980,bebidas:160006,panificados:117890,leites:156009,aves:73125,carnes:200142,frutas:59082,legumes:37641,higiene:277057,ipsm500:"MÉDIO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
   {cidade:"Itaocara",ponto:"Rua São José",raio:"1km",hab:6504,dom:2891,fluxo:20711,rendaDom:6786,classAB:30.3,alimTotal:2311872,alimFora:853620,alimNoDom:1458240,lanches:45936,sanduiches:62691,almoco:669580,bebidas:196631,panificados:150480,leites:193468,aves:93344,carnes:254998,frutas:73352,legumes:46568,higiene:352348,ipsm500:"MÉDIO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
   {cidade:"Itaocara",ponto:"Rua São José",raio:"2km",hab:13327,dom:5478,fluxo:22914,rendaDom:6177,classAB:25.3,alimTotal:4116072,alimFora:1457671,alimNoDom:2658384,lanches:78006,sanduiches:111869,almoco:1131810,bebidas:346749,panificados:278063,leites:345099,aves:172292,carnes:468672,frutas:131344,legumes:82897,higiene:646937,ipsm500:"MÉDIO",ipsm1k:"MUITO BAIXO",ipsm2k:"MUITO BAIXO"},
@@ -916,14 +1019,43 @@ const FAT_DATA = [
   {cidade:"Nova Friburgo",ponto:"Pça. Demerval Moreira",raio:"2km",hab:41105,dom:23122,fluxo:145417,rendaDom:8688,classAB:42.6,alimTotal:21651707,alimFora:8795494,alimNoDom:12856063,lanches:470751,sanduiches:575738,almoco:7089253,bebidas:1858049,panificados:1277543,leites:1795279,aves:801991,carnes:2211967,frutas:669745,legumes:441305,higiene:3036331,ipsm500:"MUITO ALTO",ipsm1k:"MUITO ALTO",ipsm2k:"MUITO ALTO"},
 ];
 
+const FAT_DATA_EXISTENTES = [
+ {cidade:"Nova Friburgo",ponto:"R. Benedito Feliciano, 1374 - São Geraldo",raio:"500m",hab:1565,dom:676,fluxo:2056,rendaDom:4353,classAB:13.0,alimTotal:392765,alimFora:122517,alimNoDom:270247,lanches:6288,sanduiches:10572,almoco:92031,bebidas:31978,panificados:29185,leites:32903,aves:18105,carnes:49165,frutas:12529,legumes:7797,higiene:67418},
+ {cidade:"Nova Friburgo",ponto:"Estr. Antônio Acácio Cardinot, 93 - Parque Maria Teresa",raio:"500m",hab:662,dom:305,fluxo:988,rendaDom:5786,classAB:23.2,alimTotal:226489,alimFora:75862,alimNoDom:150627,lanches:4041,sanduiches:6177,almoco:57803,bebidas:18973,panificados:16000,leites:19035,aves:9874,carnes:26884,frutas:7267,legumes:4489,higiene:37187},
+ {cidade:"Nova Friburgo",ponto:"R. Pres. Getulio Vargas, 94 - Olaria",raio:"500m",hab:11176,dom:5885,fluxo:44649,rendaDom:5544,classAB:25.1,alimTotal:4031625,alimFora:1405744,alimNoDom:2625866,lanches:74785,sanduiches:109180,almoco:1085707,bebidas:338929,panificados:275747,leites:337827,aves:170850,carnes:466013,frutas:128151,legumes:80352,higiene:643237},
+ {cidade:"Nova Friburgo",ponto:"Av. Manoel Carneiro de Menezes, 3969 - Mury",raio:"500m",hab:251,dom:112,fluxo:321,rendaDom:9222,classAB:32.1,alimTotal:109393,alimFora:44033,alimNoDom:65359,lanches:2263,sanduiches:2817,almoco:35766,bebidas:9116,panificados:6503,leites:8972,aves:4148,carnes:11470,frutas:3294,legumes:2250,higiene:15467},
+ {cidade:"Nova Friburgo",ponto:"Av. Euterpe Friburguense, 16/20 - Centro",raio:"500m",hab:3721,dom:2380,fluxo:19804,rendaDom:10971,classAB:59.9,alimTotal:2614482,alimFora:1152123,alimNoDom:1462336,lanches:61853,sanduiches:68754,almoco:946946,bebidas:227163,panificados:139574,leites:215444,aves:88499,carnes:246036,frutas:79520,legumes:53983,higiene:336400},
+ {cidade:"Teresópolis",ponto:"Av. Delfim Moreira, 1200 - Várzea",raio:"500m",hab:2976,dom:1809,fluxo:24012,rendaDom:11826,classAB:54.1,alimTotal:2155776,alimFora:937694,alimNoDom:1218064,lanches:49890,sanduiches:56348,almoco:770006,bebidas:185763,panificados:117009,leites:177352,aves:74382,carnes:206673,frutas:65295,legumes:44507,higiene:281500},
+ {cidade:"Cordeiro",ponto:"Rua Weverton Vieira Soares, 361 - Parque Raul Veiga",raio:"500m",hab:1873,dom:865,fluxo:3151,rendaDom:6617,classAB:29.0,alimTotal:694092,alimFora:249242,alimNoDom:444848,lanches:13440,sanduiches:18915,almoco:193645,bebidas:58985,panificados:46328,leites:58229,aves:28639,carnes:78173,frutas:22149,legumes:13875,higiene:108278},
+ {cidade:"Bom Jardim",ponto:"R. Nilo Peçanha, 76 - Centro",raio:"500m",hab:1922,dom:1002,fluxo:22861,rendaDom:9406,classAB:47.8,alimTotal:1022753,alimFora:418708,alimNoDom:604038,lanches:22876,sanduiches:27644,almoco:336355,bebidas:89145,panificados:59903,leites:85262,aves:37287,carnes:102760,frutas:32068,legumes:20753,higiene:142411},
+ {cidade:"Nova Friburgo",ponto:"R. Benedito Feliciano, 1374 - São Geraldo",raio:"1km",hab:5827,dom:2726,fluxo:9115,rendaDom:4253,classAB:13.3,alimTotal:1546455,alimFora:480577,alimNoDom:1065875,lanches:24550,sanduiches:41521,almoco:361116,bebidas:125507,panificados:115202,leites:129490,aves:71560,carnes:194132,frutas:49235,legumes:30761,higiene:265845},
+ {cidade:"Nova Friburgo",ponto:"Estr. Antônio Acácio Cardinot, 93 - Parque Maria Teresa",raio:"1km",hab:8806,dom:4207,fluxo:10463,rendaDom:4289,classAB:14.0,alimTotal:2383134,alimFora:745116,alimNoDom:1638014,lanches:37814,sanduiches:63696,almoco:562224,bebidas:192700,panificados:176743,leites:199153,aves:110015,carnes:298664,frutas:75591,legumes:47559,higiene:408040},
+ {cidade:"Nova Friburgo",ponto:"R. Pres. Getulio Vargas, 94 - Olaria",raio:"1km",hab:21072,dom:11023,fluxo:63227,rendaDom:5150,classAB:21.4,alimTotal:7141006,alimFora:2422970,alimNoDom:4718013,lanches:127476,sanduiches:192672,almoco:1860340,bebidas:594698,panificados:499099,leites:597932,aves:309598,carnes:843813,frutas:226728,legumes:142132,higiene:1161708},
+ {cidade:"Nova Friburgo",ponto:"Av. Manoel Carneiro de Menezes, 3969 - Mury",raio:"1km",hab:900,dom:483,fluxo:6296,rendaDom:6348,classAB:28.2,alimTotal:317877,alimFora:128879,alimNoDom:188996,lanches:6459,sanduiches:8000,almoco:105492,bebidas:26068,panificados:18714,leites:25872,aves:12074,carnes:33479,frutas:9377,legumes:6577,higiene:44637},
+ {cidade:"Nova Friburgo",ponto:"Av. Euterpe Friburguense, 16/20 - Centro",raio:"1km",hab:14037,dom:8654,fluxo:94845,rendaDom:10711,classAB:55.4,alimTotal:9396403,alimFora:4076864,alimNoDom:5319461,lanches:218130,sanduiches:247011,almoco:3341180,bebidas:812733,panificados:511923,leites:774552,aves:324358,carnes:900537,frutas:286116,legumes:193660,higiene:1230458},
+ {cidade:"Teresópolis",ponto:"Av. Delfim Moreira, 1200 - Várzea",raio:"1km",hab:14577,dom:8313,fluxo:82648,rendaDom:7925,classAB:40.7,alimTotal:7156993,alimFora:2885205,alimNoDom:4271739,lanches:154841,sanduiches:191063,almoco:2320064,bebidas:614329,panificados:426044,leites:594293,aves:266919,carnes:734993,frutas:222398,legumes:145903,higiene:1010291},
+ {cidade:"Cordeiro",ponto:"Rua Weverton Vieira Soares, 361 - Parque Raul Veiga",raio:"1km",hab:5199,dom:2577,fluxo:18572,rendaDom:6874,classAB:34.1,alimTotal:2075110,alimFora:780473,alimNoDom:1294625,lanches:42597,sanduiches:56714,almoco:612869,bebidas:178687,panificados:132827,leites:174064,aves:82064,carnes:224481,frutas:66158,legumes:41647,higiene:311888},
+ {cidade:"Bom Jardim",ponto:"R. Nilo Peçanha, 76 - Centro",raio:"1km",hab:5799,dom:2777,fluxo:25177,rendaDom:7757,classAB:37.7,alimTotal:2481150,alimFora:952451,alimNoDom:1528684,lanches:52047,sanduiches:67682,almoco:751807,bebidas:214482,panificados:155667,leites:207865,aves:96275,carnes:263931,frutas:78831,legumes:49849,higiene:366726},
+ {cidade:"Nova Friburgo",ponto:"R. Benedito Feliciano, 1374 - São Geraldo",raio:"2km",hab:28742,dom:14133,fluxo:50359,rendaDom:4740,classAB:16.3,alimTotal:8702283,alimFora:2808927,alimNoDom:5893335,lanches:144598,sanduiches:233225,almoco:2132498,bebidas:712541,panificados:631153,leites:727665,aves:392301,carnes:1067890,frutas:275697,legumes:172798,higiene:1463784},
+ {cidade:"Nova Friburgo",ponto:"Estr. Antônio Acácio Cardinot, 93 - Parque Maria Teresa",raio:"2km",hab:21106,dom:10252,fluxo:47958,rendaDom:4223,classAB:14.4,alimTotal:5697284,alimFora:1798703,alimNoDom:3898569,lanches:92039,sanduiches:152754,almoco:1358837,bebidas:463290,panificados:419821,leites:476662,aves:261012,carnes:708523,frutas:181000,legumes:113560,higiene:969863},
+ {cidade:"Nova Friburgo",ponto:"R. Pres. Getulio Vargas, 94 - Olaria",raio:"2km",hab:37820,dom:19836,fluxo:106493,rendaDom:6344,classAB:28.2,alimTotal:14948221,alimFora:5447073,alimNoDom:9501078,lanches:290153,sanduiches:402684,almoco:4263326,bebidas:1263300,panificados:984011,leites:1248732,aves:611712,carnes:1673512,frutas:471585,legumes:299798,higiene:2306289},
+ {cidade:"Nova Friburgo",ponto:"Av. Manoel Carneiro de Menezes, 3969 - Mury",raio:"2km",hab:3447,dom:2168,fluxo:16215,rendaDom:7892,classAB:37.5,alimTotal:1762884,alimFora:730589,alimNoDom:1032283,lanches:37500,sanduiches:45063,almoco:598046,bebidas:147227,panificados:101349,leites:144133,aves:64991,carnes:180230,frutas:52607,legumes:36427,higiene:242241},
+ {cidade:"Nova Friburgo",ponto:"Av. Euterpe Friburguense, 16/20 - Centro",raio:"2km",hab:33645,dom:19123,fluxo:148532,rendaDom:9000,classAB:44.7,alimTotal:18309800,alimFora:7542103,alimNoDom:10767565,lanches:403597,sanduiches:485693,almoco:6101299,bebidas:1573695,panificados:1063303,leites:1516298,aves:668727,carnes:1846824,frutas:564517,legumes:374062,higiene:2532693},
+ {cidade:"Teresópolis",ponto:"Av. Delfim Moreira, 1200 - Várzea",raio:"2km",hab:45253,dom:24764,fluxo:135398,rendaDom:7386,classAB:35.0,alimTotal:20076340,alimFora:7907964,alimNoDom:12168249,lanches:417720,sanduiches:530969,almoco:6346657,bebidas:1699602,panificados:1224286,leites:1663044,aves:770242,carnes:2117788,frutas:620008,legumes:409804,higiene:2893953},
+ {cidade:"Cordeiro",ponto:"Rua Weverton Vieira Soares, 361 - Parque Raul Veiga",raio:"2km",hab:15438,dom:7452,fluxo:21311,rendaDom:6069,classAB:28.4,alimTotal:5412428,alimFora:1966340,alimNoDom:3446063,lanches:105799,sanduiches:147054,almoco:1534619,bebidas:459653,panificados:357520,leites:453449,aves:221444,carnes:604579,frutas:172178,legumes:108626,higiene:836081},
+ {cidade:"Bom Jardim",ponto:"R. Nilo Peçanha, 76 - Centro",raio:"2km",hab:13647,dom:6381,fluxo:27888,rendaDom:6083,classAB:26.7,alimTotal:4654620,alimFora:1677754,alimNoDom:2976845,lanches:89536,sanduiches:125870,almoco:1309062,bebidas:392865,panificados:309487,leites:389320,aves:192082,carnes:524617,frutas:147591,legumes:93498,higiene:723481},
+];
+
+FAT_DATA_EXISTENTES.forEach(d => d.tipo = "EXISTENTE");
+FAT_DATA_CANDIDATOS.forEach(d => d.tipo = "CANDIDATO");
+
 // ─── SCATTER IPSM × FATURAMENTO ───────────────────────────────────────────────
 function renderScatter(raio) {
+  if(!chartsAvailable()) return;
   // Build points: x = IPSM (live), y = faturamento total (alimNoDom + higiene)
   // One entry per ponto (using the raio selected in the fat tab)
-  const prevRaio = curRaio;
-  curRaio = raio;
-  const liveResults = getResults(); // 14 results with .ipsm and .cat
-  curRaio = prevRaio;
+  const liveResults = getResults(raio);
+  const fatSrc = getFatSource();
 
   const CAT_COLOR = {
     "MUITO ALTO": "#43939D",
@@ -938,30 +1070,9 @@ function renderScatter(raio) {
   const bycat = {};
   catOrder.forEach(c => bycat[c] = []);
 
-  // Explicit map: RAW .n  →  FAT cidade · ponto  (avoids fragile word matching)
-  const RAW_TO_FAT = {
-    "BJ Aristides Figueiredo":   "Bom Jesus do Itabapoana · Rua Aristides Figueiredo",
-    "BJ R. XV de Novembro":      "Bom Jesus do Itabapoana · R. XV de Novembro",
-    "Itp. R. Dra. Darci Vargas": "Itaperuna · R. Dra. Darci Vargas (Fiteiro)",
-    "Itp. Av. Pres. Dutra":      "Itaperuna · Av. Pres. Dutra (Cidade Nova)",
-    "Itp. R. Vinhosa":           "Itaperuna · R. Vinhosa",
-    "Itaocara Rua São José":     "Itaocara · Rua São José",
-    "Miracema R. Mal. Floriano": "Miracema · R. Mal. Floriano",
-    "Itp. Rua Rafael Vasc.":     "Itaperuna · Rua Rafael Vasconcelos",
-    "Itp. Rua Júlio César":      "Itaperuna · Rua Júlio César",
-    "Pádua Av. Nilo Peçanha":    "Sto. Antônio de Pádua · Av. Nilo Peçanha",
-    "Pádua R. Cons. Paulino":    "Sto. Antônio de Pádua · R. Conselheiro Paulino",
-    "Itaocara Rua W. L. Rimes":  "Itaocara · Rua Walter Luiz Rimes",
-    "Italva R. A. Fonseca":      "Italva · Rua Antônio Ferreira da Fonseca",
-    "Italva Av. Cel. Luís Sales":"Italva · Av. Cel. Luís Sales",
-    "N. Friburgo Pça. Demerval": "Nova Friburgo · Pça. Demerval Moreira",
-  };
-
   liveResults.forEach(r => {
-    const fatKey = RAW_TO_FAT[r.n];
-    if(!fatKey) return;
-    const [fatCidade, fatPonto] = fatKey.split(" · ");
-    const fatRow = FAT_DATA.find(d => d.raio === raio && d.cidade === fatCidade && d.ponto === fatPonto);
+    if(!r.fatKey) return;
+    const fatRow = fatSrc.find(d => d.raio === raio && (d.cidade+" · "+d.ponto) === r.fatKey);
     if(!fatRow) return;
     const secoes = [fatRow.carnes, fatRow.almoco, fatRow.leites, fatRow.bebidas,
       fatRow.panificados, fatRow.aves, fatRow.frutas, fatRow.legumes,
@@ -970,7 +1081,7 @@ function renderScatter(raio) {
     bycat[r.cat].push({
       x: parseFloat(r.ipsm.toFixed(4)),
       y: parseFloat(faturamento.toFixed(3)),
-      label: r.n,
+      label: displayName(r),
       cidade: r.c,
       cat: r.cat,
     });
@@ -989,7 +1100,7 @@ function renderScatter(raio) {
     }));
 
   document.getElementById("scatterRaioLabel").textContent =
-    `Raio: ${raio} · todos os 14 pontos · cor por classificação IPSM`;
+    `Raio: ${raio} · todos os ${liveResults.length} pontos · cor por classificação IPSM`;
 
   const ctx = document.getElementById("scatterChart").getContext("2d");
   if(scatterChartInst){scatterChartInst.destroy();scatterChartInst=null;}
@@ -1075,24 +1186,32 @@ function fatIpsmBadge(v) {
 }
 
 function buildFatPontoSelect() {
-  const src = includeNF ? FAT_DATA : FAT_DATA.filter(d => d.cidade !== "Nova Friburgo");
-  const pontos = [...new Set(src.map(d => d.cidade+" · "+d.ponto))];
+  const base = getFatSource();
+  const src = includeNF ? base : base.filter(d => d.cidade !== "Nova Friburgo");
+  const seen = new Map();
+  src.forEach(d => {
+    const key = d.cidade+" · "+d.ponto;
+    if(!seen.has(key)) seen.set(key, d.tipo);
+  });
   const sel = document.getElementById("fatPonto");
   const prev = sel.value;
   sel.innerHTML = "";
-  pontos.forEach(p => {
+  seen.forEach((tipo, key) => {
     const o = document.createElement("option");
-    o.value = p; o.textContent = p; sel.appendChild(o);
+    o.value = key;
+    o.textContent = curDataset==="unificado" ? `${key} (${tipo==="EXISTENTE"?"Existente":"Candidato"})` : key;
+    sel.appendChild(o);
   });
-  // Restore previous selection if still available, else default
+  const pontos = [...seen.keys()];
   if(pontos.includes(prev)) sel.value = prev;
-  else sel.value = "Itaperuna · R. Dra. Darci Vargas (Fiteiro)";
+  else if(pontos.length) sel.value = pontos[0];
 }
 
 function renderFat() {
   const key   = document.getElementById("fatPonto").value;
   const raio  = document.getElementById("fatRaio").value;
-  const src   = includeNF ? FAT_DATA : FAT_DATA.filter(d => d.cidade !== "Nova Friburgo");
+  const base  = getFatSource();
+  const src   = includeNF ? base : base.filter(d => d.cidade !== "Nova Friburgo");
   const row   = src.find(d => (d.cidade+" · "+d.ponto)===key && d.raio===raio);
   if(!row) return;
 
@@ -1113,33 +1232,9 @@ function renderFat() {
   const maxVal = secoes[0].val;
   const total  = secoes.reduce((s,x) => s+x.val, 0);
 
-  // Busca classificação dinâmica com os pesos atuais
-  // Troca temporariamente o raio global, calcula, restaura
-  const prevRaio = curRaio;
-  curRaio = raio;
-  const liveResults = getResults();
-  curRaio = prevRaio;
-
-  // Mapa explícito: chave FAT "cidade · ponto" → nome RAW (.n)
-  const FAT_TO_RAW = {
-    "Bom Jesus do Itabapoana · Rua Aristides Figueiredo":  "BJ Aristides Figueiredo",
-    "Bom Jesus do Itabapoana · R. XV de Novembro":         "BJ R. XV de Novembro",
-    "Itaperuna · R. Dra. Darci Vargas (Fiteiro)":          "Itp. R. Dra. Darci Vargas",
-    "Itaperuna · Av. Pres. Dutra (Cidade Nova)":           "Itp. Av. Pres. Dutra",
-    "Itaperuna · R. Vinhosa":                              "Itp. R. Vinhosa",
-    "Itaocara · Rua São José":                             "Itaocara Rua São José",
-    "Miracema · R. Mal. Floriano":                         "Miracema R. Mal. Floriano",
-    "Itaperuna · Rua Rafael Vasconcelos":                  "Itp. Rua Rafael Vasc.",
-    "Itaperuna · Rua Júlio César":                         "Itp. Rua Júlio César",
-    "Sto. Antônio de Pádua · Av. Nilo Peçanha":            "Pádua Av. Nilo Peçanha",
-    "Sto. Antônio de Pádua · R. Conselheiro Paulino":      "Pádua R. Cons. Paulino",
-    "Itaocara · Rua Walter Luiz Rimes":                    "Itaocara Rua W. L. Rimes",
-    "Italva · Rua Antônio Ferreira da Fonseca":            "Italva R. A. Fonseca",
-    "Italva · Av. Cel. Luís Sales":                        "Italva Av. Cel. Luís Sales",
-    "Nova Friburgo · Pça. Demerval Moreira":               "N. Friburgo Pça. Demerval",
-  };
-  const rawName = FAT_TO_RAW[key];
-  const liveEntry = rawName ? liveResults.find(r => r.n === rawName) : null;
+  // Busca classificação dinâmica com os pesos atuais (mesmo raio, mesmo dataset)
+  const liveResults = getResults(raio);
+  const liveEntry = liveResults.find(r => r.fatKey === key);
   const ipsm = liveEntry ? liveEntry.cat : "—";
 
   // Metrics
@@ -1256,9 +1351,16 @@ document.addEventListener("DOMContentLoaded", () => {
   buildFatPontoSelect();
   renderFat();
 
+  // Dataset (Existentes / Candidatos / Unificado)
+  document.querySelectorAll("#datasetTabs .raio-tab").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("#datasetTabs .raio-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); curDataset=b.dataset.ds;
+    buildHead(); buildFatPontoSelect(); render(); renderFat();
+  }));
+
   // Raio
-  document.querySelectorAll(".raio-tab").forEach(b => b.addEventListener("click", () => {
-    document.querySelectorAll(".raio-tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".raio-tabs:not(#datasetTabs) .raio-tab").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".raio-tabs:not(#datasetTabs) .raio-tab").forEach(x=>x.classList.remove("active"));
     b.classList.add("active"); curRaio=b.dataset.r; render();
   }));
 
